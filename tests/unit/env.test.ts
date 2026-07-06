@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnv } from "@/lib/env";
+import { parseClientEnv, parseEnv } from "@/lib/env";
 
 const validRaw = {
   NEXT_PUBLIC_SUPABASE_URL: "https://krcsempfrkizmbpqvksz.supabase.co",
@@ -51,5 +51,37 @@ describe("parseEnv", () => {
     const env = parseEnv(rest);
 
     expect(env.databaseUrlReady).toBe(false);
+  });
+});
+
+describe("parseClientEnv", () => {
+  const validClientRaw = {
+    NEXT_PUBLIC_SUPABASE_URL: "https://krcsempfrkizmbpqvksz.supabase.co",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key-value",
+  };
+
+  it("parses a valid client environment without any server-only variables present", () => {
+    const env = parseClientEnv(validClientRaw);
+
+    expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe(validClientRaw.NEXT_PUBLIC_SUPABASE_URL);
+    expect(env.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe(validClientRaw.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  });
+
+  it("throws when NEXT_PUBLIC_SUPABASE_URL is not a well-formed URL", () => {
+    expect(() =>
+      parseClientEnv({ ...validClientRaw, NEXT_PUBLIC_SUPABASE_URL: "not-a-url" }),
+    ).toThrow();
+  });
+
+  it("throws when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing", () => {
+    expect(() =>
+      parseClientEnv({ NEXT_PUBLIC_SUPABASE_URL: validClientRaw.NEXT_PUBLIC_SUPABASE_URL }),
+    ).toThrow();
+  });
+
+  it("throws when NEXT_PUBLIC_SUPABASE_ANON_KEY is present but empty", () => {
+    expect(() =>
+      parseClientEnv({ ...validClientRaw, NEXT_PUBLIC_SUPABASE_ANON_KEY: "" }),
+    ).toThrow();
   });
 });
