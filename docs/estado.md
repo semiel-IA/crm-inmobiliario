@@ -7,7 +7,7 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
 ## Fase 0 — Fundaciones
 
 - [hecho] T0.1 — Inicializar repo + scaffold + `/init` (revisión: aprobada sin hallazgos críticos)
-- [bloqueado] T0.2 — Proyecto Supabase + conexión (🔴 espera cuenta Supabase del usuario)
+- [en curso] T0.2 — Proyecto Supabase + conexión (ping Postgres pendiente de contraseña de BD)
 - [pendiente] T0.3 — Esquema núcleo SaaS + RLS
 - [pendiente] T0.4 — Auth completo
 - [pendiente] T0.5 — Layout de la app + CI
@@ -71,7 +71,8 @@ Ninguna de estas tablas existe todavía: se crean a partir de T0.3 (núcleo SaaS
 
 ## Checkpoints 🔴 pendientes con el usuario
 
-- T0.2 — crear/facilitar cuenta Supabase (gratis).
+- T0.2 — facilitar la contraseña de la base de datos Postgres del proyecto Supabase (la cuenta y
+  el proyecto ya existen; solo falta esto para poder correr el ping directo a Postgres).
 - Fin F0 — visto bueno a scaffold, esquema y flujo de registro.
 - Fin F1 — visto bueno a UX de contactos y propiedades.
 - Antes de T4.3 — cuenta Meta Business y decisión sobre WhatsApp saliente (micro-costo) vs. solo email.
