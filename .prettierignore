@@ -1,0 +1,7 @@
+.next
+node_modules
+package-lock.json
+public
+
+# canonical copy of the master plan; must stay byte-identical to the source
+docs/plan-maestro.md
