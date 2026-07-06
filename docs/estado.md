@@ -8,7 +8,7 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
 
 - [hecho] T0.1 — Inicializar repo + scaffold + `/init` (revisión: aprobada sin hallazgos críticos)
 - [hecho] T0.2 — Proyecto Supabase + conexión (revisión: aprobada tras 1 ciclo de fix; ping REST verificado en vivo; ping directo a Postgres verificado ✔ (`db.krcsempfrkizmbpqvksz.supabase.co:5432`, conexión directa — no hizo falta el session pooler))
-- [en curso] T0.3 — Esquema núcleo SaaS + RLS
+- [hecho] T0.3 — Esquema núcleo SaaS + RLS (revisión: aprobada sin hallazgos críticos ni importantes; aislamiento verificado en vivo 8/8)
 - [pendiente] T0.4 — Auth completo
 - [pendiente] T0.5 — Layout de la app + CI
 
