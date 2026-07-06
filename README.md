@@ -35,12 +35,17 @@ Estado del proyecto: fase de fundaciones (F0). Ver `docs/plan-maestro.md` para e
 | `npm test`          | Ejecuta la suite de tests unitarios (Vitest)        |
 | `npm run format`    | Formatea el código con Prettier                     |
 | `npm run db:ping`   | Verifica la conexión con Supabase (REST + Postgres) |
+| `npm run db:generate` | Genera migraciones SQL a partir del esquema Drizzle (`src/server/db/schema`) |
+| `npm run db:migrate`  | Aplica las migraciones pendientes a la base de datos real |
+| `npm run db:seed`    | Siembra (upsert idempotente) los planes de suscripción |
+| `npm run test:rls`   | Suite de aislamiento multi-tenant contra el proyecto Supabase real (crea/borra datos de prueba) |
 
 ## Stack
 
 Next.js (App Router) + TypeScript + Tailwind CSS + shadcn/ui. Supabase (Auth + Postgres) con
-Drizzle ORM conectado desde T0.2 (esquema y migraciones llegan en T0.3; auth completo en T0.4);
-tests E2E con Playwright llegan en T0.4.
+Drizzle ORM conectado desde T0.2; esquema núcleo SaaS (`tenants`, `plans`, `memberships`,
+`audit_log`) + Row Level Security desde T0.3 (auth completo llega en T0.4); tests E2E con
+Playwright llegan en T0.4.
 
 ## Estructura de carpetas
 
@@ -51,13 +56,14 @@ src/
   components/                           UI compartida (incluye shadcn/ui en components/ui)
   lib/                                  utilidades y helpers compartidos
   server/
-    db/                                 clientes Drizzle/Supabase; esquema y migraciones llegan en T0.3
+    db/                                 clientes Drizzle/Supabase, schema/ (tablas núcleo SaaS) y migrations/
     services/                           lógica de negocio por módulo, testeable sin HTTP
     integrations/
       mercadopago/                      integración de pagos/suscripciones
       whatsapp/                         integración de WhatsApp Cloud API
       email/                            envío de correo transaccional
 tests/
-  unit/                                 tests unitarios (Vitest)
+  unit/                                 tests unitarios (Vitest, sin red)
+  rls/                                  suite de aislamiento multi-tenant (Vitest, contra Supabase real)
   e2e/                                  tests end-to-end (Playwright, llega en T0.4)
 ```
