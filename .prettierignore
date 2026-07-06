@@ -5,3 +5,7 @@ public
 
 # canonical copy of the master plan; must stay byte-identical to the source
 docs/plan-maestro.md
+
+# drizzle-kit generated migration metadata; reformatting would just diff-noise against
+# whatever drizzle-kit itself produces
+src/server/db/migrations/meta

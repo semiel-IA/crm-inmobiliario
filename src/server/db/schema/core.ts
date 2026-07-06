@@ -92,10 +92,7 @@ export const memberships = pgTable(
     index("memberships_tenant_role_idx").on(table.tenantId, table.role),
     index("memberships_user_idx").on(table.userId),
     check("memberships_role_check", sql`${table.role} in ('admin', 'agent', 'assistant')`),
-    check(
-      "memberships_status_check",
-      sql`${table.status} in ('invited', 'active', 'disabled')`,
-    ),
+    check("memberships_status_check", sql`${table.status} in ('invited', 'active', 'disabled')`),
   ],
 );
 
