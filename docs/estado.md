@@ -7,7 +7,7 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
 ## Fase 0 — Fundaciones
 
 - [hecho] T0.1 — Inicializar repo + scaffold + `/init` (revisión: aprobada sin hallazgos críticos)
-- [en curso] T0.2 — Proyecto Supabase + conexión (ping Postgres pendiente de contraseña de BD)
+- [hecho] T0.2 — Proyecto Supabase + conexión (revisión: aprobada tras 1 ciclo de fix; ping REST verificado en vivo; ping directo a Postgres se verificará al recibir la contraseña de BD)
 - [pendiente] T0.3 — Esquema núcleo SaaS + RLS
 - [pendiente] T0.4 — Auth completo
 - [pendiente] T0.5 — Layout de la app + CI
