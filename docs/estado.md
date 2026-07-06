@@ -6,8 +6,8 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
 
 ## Fase 0 — Fundaciones
 
-- [en curso] T0.1 — Inicializar repo + scaffold + `/init`
-- [pendiente] T0.2 — Proyecto Supabase + conexión
+- [hecho] T0.1 — Inicializar repo + scaffold + `/init` (revisión: aprobada sin hallazgos críticos)
+- [bloqueado] T0.2 — Proyecto Supabase + conexión (🔴 espera cuenta Supabase del usuario)
 - [pendiente] T0.3 — Esquema núcleo SaaS + RLS
 - [pendiente] T0.4 — Auth completo
 - [pendiente] T0.5 — Layout de la app + CI
