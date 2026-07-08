@@ -15,11 +15,11 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
   usuario (checkpoint F0); invitaciones por link copiable, correo solo en consola, ver ADR-005.
   Endurecimiento diferido a T6.2: índice único parcial `(tenant_id, email) WHERE accepted_at IS
 NULL` contra invitaciones duplicadas concurrentes)
-- [en curso] T0.5 — Layout de la app + CI (shell con navegación por módulos, guard por rol en el
-  nav, settings del tenant con renombrar, y workflow de GitHub Actions listos y revisados —
-  aprobado tras 1 fix al workflow; unit 56/56, RLS 17/17 y E2E 10/10 verdes en vivo. Falta el
-  checkpoint del usuario: crear el repo en GitHub y hacer push para poder verificar el criterio
-  "CI verde en PR")
+- [hecho] T0.5 — Layout de la app + CI (revisión: aprobada tras 1 fix al workflow; unit 56/56,
+  RLS 17/17 y E2E 10/10 verdes en vivo. Repo publicado por el usuario en
+  `github.com/semiel-IA/crm-inmobiliario` y CI verificado verde en el primer run sobre `main`
+  (2026-07-07); el workflow también corre en PRs. Regla operativa nueva: push a `origin` tras
+  cada commit)
 
 ## Fase 1 — Contactos e inventario (M1, M2)
 
@@ -82,9 +82,6 @@ Ninguna de estas tablas existe todavía: se crean a partir de T0.3 (núcleo SaaS
 
 - T0.2 — facilitar la contraseña de la base de datos Postgres del proyecto Supabase (la cuenta y
   el proyecto ya existen; solo falta esto para poder correr el ping directo a Postgres).
-- T0.5 — crear el repositorio en GitHub y hacer push (requiere cuenta GitHub del usuario; regla
-  $0: no se registra nada sin aprobación) para activar GitHub Actions y verificar "CI verde en
-  PR".
 - Fin F0 — visto bueno a scaffold, esquema y flujo de registro.
 - Fin F1 — visto bueno a UX de contactos y propiedades.
 - Antes de T4.3 — cuenta Meta Business y decisión sobre WhatsApp saliente (micro-costo) vs. solo email.
