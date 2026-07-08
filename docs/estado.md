@@ -9,7 +9,12 @@ cada tarea para sobrevivir entre sesiones. Estados posibles: `[pendiente]`, `[en
 - [hecho] T0.1 — Inicializar repo + scaffold + `/init` (revisión: aprobada sin hallazgos críticos)
 - [hecho] T0.2 — Proyecto Supabase + conexión (revisión: aprobada tras 1 ciclo de fix; ping REST verificado en vivo; ping directo a Postgres verificado ✔ (`db.krcsempfrkizmbpqvksz.supabase.co:5432`, conexión directa — no hizo falta el session pooler))
 - [hecho] T0.3 — Esquema núcleo SaaS + RLS (revisión: aprobada sin hallazgos críticos ni importantes; aislamiento verificado en vivo 8/8)
-- [pendiente] T0.4 — Auth completo
+- [hecho] T0.4 — Auth completo (revisión: aprobada tras 1 ciclo de fix — compensación de usuarios
+  Auth huérfanos, unit tests de servicios, origen confiable `APP_URL`, dedupe + revocar
+  invitaciones; unit 49/49, RLS 17/17 y E2E 6/6 verdes en vivo. Resend pendiente de cuenta del
+  usuario (checkpoint F0); invitaciones por link copiable, correo solo en consola, ver ADR-005.
+  Endurecimiento diferido a T6.2: índice único parcial `(tenant_id, email) WHERE accepted_at IS
+NULL` contra invitaciones duplicadas concurrentes)
 - [pendiente] T0.5 — Layout de la app + CI
 
 ## Fase 1 — Contactos e inventario (M1, M2)
