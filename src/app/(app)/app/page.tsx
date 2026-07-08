@@ -1,14 +1,11 @@
-import Link from "next/link";
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { ROLE_LABELS } from "@/lib/roles";
 import { requireUser } from "@/lib/supabase/require-user";
-import { signOut } from "./actions";
 
 /**
- * Minimal authenticated home (the real app layout arrives in T0.5): greeting, tenant name, role
- * and sign-out. Also surfaces the "solo admins" notice when the proxy bounced a non-admin from
- * an admin-only section (`?aviso=solo-admin`).
+ * Authenticated home: greeting, tenant name and role. Navigation and sign-out live in the shared
+ * app shell (`layout.tsx`/`nav.tsx`, T0.5). Also surfaces the "solo admins" notice when the proxy
+ * bounced a non-admin from an admin-only section (`?aviso=solo-admin`).
  */
 export default async function AppHomePage({
   searchParams,
@@ -44,25 +41,6 @@ export default async function AppHomePage({
           Rol: {ROLE_LABELS[role]}
         </p>
       </header>
-
-      <nav className="flex flex-wrap gap-3">
-        {role === "admin" && (
-          <>
-            <Link href="/app/equipo" className={buttonVariants({ variant: "outline" })}>
-              Equipo
-            </Link>
-            <Link href="/app/configuracion" className={buttonVariants({ variant: "outline" })}>
-              Configuración
-            </Link>
-          </>
-        )}
-      </nav>
-
-      <form action={signOut}>
-        <Button type="submit" variant="secondary">
-          Cerrar sesión
-        </Button>
-      </form>
     </main>
   );
 }

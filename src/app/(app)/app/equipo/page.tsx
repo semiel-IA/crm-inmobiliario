@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLE_LABELS } from "@/lib/roles";
@@ -9,7 +8,7 @@ import { InviteForm } from "./invite-form";
 
 const dateFormatter = new Intl.DateTimeFormat("es-CO", { dateStyle: "medium" });
 
-/** Team management (admin only, enforced by proxy + `requireAdmin`). Real layout lands in T0.5. */
+/** Team management (admin only, enforced by proxy + `requireAdmin`). Nav lives in the app shell. */
 export default async function EquipoPage() {
   const { tenantId } = await requireAdmin();
   const { members, pendingInvitations } = await getTeamOverview({ tenantId });
@@ -18,11 +17,6 @@ export default async function EquipoPage() {
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Equipo</h1>
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app" className="underline">
-            ← Volver al inicio
-          </Link>
-        </p>
       </header>
 
       <Card>
