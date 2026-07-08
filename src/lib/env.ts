@@ -15,6 +15,13 @@ const clientEnvSchema = z.object({
 const envSchema = clientEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   DATABASE_URL: z.string().min(1).optional(),
+  /**
+   * Trusted origin (scheme + host, no trailing slash) used to build absolute URLs — e.g. the
+   * invitation link — instead of the `x-forwarded-host`/`host` request headers, which are
+   * client-controllable and spoofable behind a misconfigured proxy. Optional: falls back to the
+   * header-derived origin when unset (local dev without a fixed domain yet).
+   */
+  APP_URL: z.string().url().optional(),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;

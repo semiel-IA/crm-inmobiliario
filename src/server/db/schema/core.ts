@@ -97,6 +97,34 @@ export const memberships = pgTable(
 );
 
 /**
+ * A pending invitation for someone to join a tenant with a given role. Created by an admin (T0.4,
+ * `createInvitation`); accepted server-side with `service_role` (`acceptInvitation`) since the
+ * invitee has no session yet. Only `tokenHash` (SHA-256 of the invitation token) is stored — the
+ * raw token is returned to the caller once, embedded in the copyable invitation link (see
+ * ADR-005).
+ */
+export const invitations = pgTable(
+  "invitations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    invitedBy: uuid("invited_by"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("invitations_tenant_email_idx").on(table.tenantId, table.email),
+    check("invitations_role_check", sql`${table.role} in ('admin', 'agent', 'assistant')`),
+  ],
+);
+
+/**
  * Append-only audit trail per tenant. No `updated_at`: rows are never mutated after insert.
  */
 export const auditLog = pgTable(

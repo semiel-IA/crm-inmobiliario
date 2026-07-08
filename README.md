@@ -25,27 +25,28 @@ Estado del proyecto: fase de fundaciones (F0). Ver `docs/plan-maestro.md` para e
 
 ## Comandos
 
-| Comando               | Descripción                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| `npm run dev`         | Levanta el servidor de desarrollo (Next.js)                                                     |
-| `npm run build`       | Genera el build de producción                                                                   |
-| `npm run start`       | Sirve el build de producción                                                                    |
-| `npm run lint`        | Ejecuta ESLint                                                                                  |
-| `npm run typecheck`   | Verifica tipos de TypeScript (`tsc --noEmit`)                                                   |
-| `npm test`            | Ejecuta la suite de tests unitarios (Vitest)                                                    |
-| `npm run format`      | Formatea el código con Prettier                                                                 |
-| `npm run db:ping`     | Verifica la conexión con Supabase (REST + Postgres)                                             |
-| `npm run db:generate` | Genera migraciones SQL a partir del esquema Drizzle (`src/server/db/schema`)                    |
-| `npm run db:migrate`  | Aplica las migraciones pendientes a la base de datos real                                       |
-| `npm run db:seed`     | Siembra (upsert idempotente) los planes de suscripción                                          |
-| `npm run test:rls`    | Suite de aislamiento multi-tenant contra el proyecto Supabase real (crea/borra datos de prueba) |
+| Comando               | Descripción                                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`         | Levanta el servidor de desarrollo (Next.js)                                                                                              |
+| `npm run build`       | Genera el build de producción                                                                                                            |
+| `npm run start`       | Sirve el build de producción                                                                                                             |
+| `npm run lint`        | Ejecuta ESLint                                                                                                                           |
+| `npm run typecheck`   | Verifica tipos de TypeScript (`tsc --noEmit`)                                                                                            |
+| `npm test`            | Ejecuta la suite de tests unitarios (Vitest)                                                                                             |
+| `npm run format`      | Formatea el código con Prettier                                                                                                          |
+| `npm run db:ping`     | Verifica la conexión con Supabase (REST + Postgres)                                                                                      |
+| `npm run db:generate` | Genera migraciones SQL a partir del esquema Drizzle (`src/server/db/schema`)                                                             |
+| `npm run db:migrate`  | Aplica las migraciones pendientes a la base de datos real                                                                                |
+| `npm run db:seed`     | Siembra (upsert idempotente) los planes de suscripción                                                                                   |
+| `npm run test:rls`    | Suite de aislamiento multi-tenant contra el proyecto Supabase real (crea/borra datos de prueba)                                          |
+| `npm run test:e2e`    | Suite E2E de auth (Playwright + Chromium) contra la app y la BD reales; requiere `.env` completo y borra sus datos de prueba al terminar |
 
 ## Stack
 
 Next.js (App Router) + TypeScript + Tailwind CSS + shadcn/ui. Supabase (Auth + Postgres) con
 Drizzle ORM conectado desde T0.2; esquema núcleo SaaS (`tenants`, `plans`, `memberships`,
-`audit_log`) + Row Level Security desde T0.3 (auth completo llega en T0.4); tests E2E con
-Playwright llegan en T0.4.
+`audit_log`, `invitations`) + Row Level Security desde T0.3; auth multi-tenant completo (registro,
+login, invitaciones por link, roles) y tests E2E con Playwright desde T0.4.
 
 ## Estructura de carpetas
 
@@ -65,5 +66,5 @@ src/
 tests/
   unit/                                 tests unitarios (Vitest, sin red)
   rls/                                  suite de aislamiento multi-tenant (Vitest, contra Supabase real)
-  e2e/                                  tests end-to-end (Playwright, llega en T0.4)
+  e2e/                                  tests end-to-end (Playwright, contra la app y BD reales)
 ```

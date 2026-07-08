@@ -15,6 +15,20 @@
       "when": 1783377934787,
       "tag": "0001_rls_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783379749435,
+      "tag": "0002_invitations_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783379782370,
+      "tag": "0003_invitations_rls",
+      "breakpoints": true
     }
   ]
 }

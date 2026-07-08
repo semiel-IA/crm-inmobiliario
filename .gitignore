@@ -43,3 +43,7 @@ next-env.d.ts
 
 # superpowers skill state
 .superpowers/
+
+# playwright
+/test-results/
+/playwright-report/
