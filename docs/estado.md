@@ -31,7 +31,16 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   idempotente.
 
 ### Tarea T1.2 — Servicio y Server Actions (contactos)
-- [pendiente] — Backend de CRUD contactos, validaciones Zod, unit tests
+- [hecho] — Zod schemas en `src/lib/validations/contacts.ts` (create + update `.partial()`,
+  mensajes es-CO, par fecha/canal de consentimiento validado en conjunto), servicio en
+  `src/server/services/contacts.ts` (`createContact`, `updateContact`, `getContact` con
+  `lead_preferences` anidadas, `listContacts` con búsqueda/filtros/paginación 10 por página,
+  `deactivateContact` soft-delete, `assignAgent` con verificación de membership activa del
+  tenant) y Server Actions delgadas en `src/app/(app)/app/contactos/actions.ts`. Todas las
+  queries filtran explícitamente por `tenant_id` (defensa en profundidad sobre RLS, plan §2.2).
+  UI (T1.3) sigue en "coming soon"; estas acciones quedan listas para consumirse ahí.
+  Verificado en vivo: unit 36/36 nuevos (validations 18 + servicio 18), sin regresiones en la
+  suite existente.
 
 ### Tarea T1.3 — UI: Listado y ficha de contactos
 - [pendiente] — Página `/contacts` (tabla con búsqueda/filtros) + `/contacts/[id]` (ficha)

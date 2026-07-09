@@ -9,7 +9,8 @@ import { vi } from "vitest";
  * arguments passed to `.values()`, `.where()`, etc.
  *
  * Not a general-purpose Drizzle mock: it only needs to support the exact chain shapes used by
- * `src/server/services/auth/*.ts` (no joins beyond `getInvitationByToken`, no transactions).
+ * `src/server/services/auth/*.ts` and `src/server/services/properties.ts` (no joins beyond
+ * `getInvitationByToken`, no transactions; `offset` added for `listProperties` pagination).
  */
 const CHAIN_METHODS = [
   "from",
@@ -19,6 +20,7 @@ const CHAIN_METHODS = [
   "orderBy",
   "innerJoin",
   "limit",
+  "offset",
   "returning",
 ] as const;
 
