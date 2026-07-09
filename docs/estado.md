@@ -59,7 +59,14 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   trigger de portada y bloqueo anon.
 
 ### Tarea T1.7 — Servicio CRUD propiedades
-- [pendiente] — Backend de propiedades, validaciones, generación de código interno
+- [hecho] — Zod schemas en `src/lib/validations/properties.ts` (regla venta/arriendo/ambas
+  compartida vía `getOperationPricingIssues`), servicio en `src/server/services/properties.ts`
+  (`generatePropertyCode` con estrategia optimista + retry sobre el unique constraint,
+  `createProperty` con verificación de owner en el tenant, `updateProperty` re-valida la regla de
+  precios mezclando payload con la fila existente, `internalCode` inmutable, `listProperties` con
+  filtros/paginación, `deactivateProperty` soft-delete) y Server Actions en
+  `src/app/(app)/app/propiedades/actions.ts`. Revisión del orquestador 2026-07-09: aprobada sin
+  hallazgos. Verificado en vivo: unit 138/138 (41 nuevos), RLS 36/36, CI verde (`d3f69f6`).
 
 ### Tarea T1.8 — UI: Listado y ficha de propiedades
 - [pendiente] — Página `/properties` + `/properties/[id]` con galería y detalles
