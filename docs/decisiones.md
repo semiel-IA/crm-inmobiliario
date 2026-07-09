@@ -44,3 +44,59 @@ Registro corto de decisiones que se desvían del plan maestro o lo precisan. For
   usuarios creados al aceptar una invitación.
 - **Consecuencia:** en el MVP no se verifica la propiedad del correo (riesgo aceptado y conocido);
   el endurecimiento (verificación real) se evalúa en T6.2.
+
+## ADR-007 — Reorganización de fases para MVP más rápido (2026-07-08)
+
+- **Contexto:** plan maestro original preveía 6 fases de complejidad creciente (F0–F6), con funcionalidades como motor de matching automático, agenda de visitas completa, automatizaciones con jobs, y WhatsApp Cloud API. El usuario pidió recortar alcance para lanzar más rápido.
+- **Decisión:** nueva estructura de 3 fases:
+  - **F1 (4–5 sem):** contactos + propiedades + pipeline kanban (núcleo CRM vendible)
+  - **F2 (1–2 sem):** WhatsApp click-to-chat + campo "próxima actividad" (comunicación mínima)
+  - **F3 (2–3 sem):** MercadoPago suscripciones + deploy (monetización y lanzamiento)
+  - **Cortado del MVP:** matching automático, agenda detallada, automatizaciones, WhatsApp API profunda, panel super-admin completo, reportes avanzados, onboarding wizard
+- **Consecuencia:**
+  - Duración F1+F2+F3: 7–10 semanas en lugar de las 20+ que implicaba F0–F6
+  - MVP funcional y vendible sin funcionalidades complejas; roadmap post-lanzamiento (v1.5+) en `docs/plan-fase-1-mvp.md`
+  - Tareas cortadas quedan documentadas para desarrollo futuro
+  - Plan detallado de F1 en `docs/plan-fase-1-mvp.md`; F2 y F3 se detallan tras aprobación de F1
+
+## ADR-008 — Confirmar MercadoPago, no Wompi (2026-07-08)
+
+- **Contexto:** plan maestro original cita MercadoPago; el usuario preguntó si prefería Wompi para simplificar.
+- **Decisión:** mantener MercadoPago (decisión original del usuario en el plan maestro; no cambiar).
+- **Consecuencia:** integración T5.2 usa MercadoPago SDK (Python/JS), webhooks, suscripciones con preapproval; sandbox gratis para desarrollo.
+
+## ADR-009 — Click-to-chat WhatsApp sin registro automático (2026-07-08)
+
+- **Contexto:** F2 simplificada planteaba click-to-chat via `wa.me`. Plan maestro preveía registro automático de interacción. El usuario confirma: sí, click puro sin registro.
+- **Decisión:** botón WhatsApp en contacto/negocio/propiedad genera link `wa.me/{teléfono}?text={mensaje}` que abre WhatsApp. **No** registra automáticamente la interacción; el agente crea la actividad manualmente si quiere.
+- **Consecuencia:** flujo más simple, menos BD writes; timeline sin ruido; el usuario controla qué se registra. WhatsApp API profunda y webhooks quedan para v2.
+
+## ADR-010 — Panel super-admin mínimo en F3 (2026-07-08)
+
+- **Contexto:** plan maestro (M9) preveía panel super-admin completo: auditoría, impersonación, suspender/reactivar, métricas. El usuario pidió simplificar.
+- **Decisión:** T5.4 en F3 queda reducido a: lista de tenants + plan + estado de pago. Sin impersonación, sin auditoría detallada, sin métricas de uso.
+- **Consecuencia:** panel mínimo para gestión básica. Funcionalidad completa (auditoría, impersonación, KPIs) queda para v1.5+ como T5.4-v2. Se conserva auditoría en `audit_log` table pero UI back-office no la expone en lanzamiento.
+
+## ADR-011 — `contacts` creada en T1.6 y bucket único de Storage con rutas por tenant (2026-07-08)
+
+- **Contexto:** T1.6 (esquema de propiedades) necesita `properties.owner_contact_id` como FK
+  obligatoria hacia `contacts`, pero `contacts` pertenecía a T1.1, que corría en paralelo. Además,
+  el brief de T1.6 dejaba abierta la estrategia de Storage: bucket por tenant
+  (`property-photos-{tenant_id}`) o bucket único con rutas por tenant.
+- **Decisión:**
+  1. La tabla `contacts` se creó dentro de T1.6 (migración `0004`), siguiendo exactamente la
+     especificación de T1.1, para que `properties` pudiera referenciarla. T1.1 quedó reducida a
+     `lead_preferences` (migraciones `0008`/`0009`) + seeds de leads; no toca `contacts`.
+  2. Storage: **un solo bucket privado `property-photos`** con rutas
+     `{tenant_id}/{property_id}/{filename}` (fotos/videos) y
+     `{tenant_id}/{property_id}/documents/{filename}` (documentos privados). El aislamiento lo dan
+     políticas RLS sobre `storage.objects` que comparan el primer segmento de la ruta con
+     `public.current_tenant_id()`. Un bucket por tenant exigiría aprovisionamiento en el registro
+     de cada tenant (pieza móvil extra) sin mejorar el aislamiento efectivo.
+  3. Las fotos de propiedades `disponible` son legibles por `anon` vía una policy que usa el
+     helper `SECURITY DEFINER` `public.property_is_publicly_listed()` (una sola verificación
+     booleana; nunca expone columnas de `properties` a `anon`). El subpath `documents/` queda
+     excluido de la lectura pública sin importar el estado de la propiedad.
+- **Consecuencia:** T1.10 (ficha pública) lee propiedades vía `service_role` en el servidor
+  (filtrando `status = 'disponible'` en código) y las fotos directamente por URL de Storage; el
+  aislamiento multi-tenant de Storage queda verificado por las políticas de la migración `0007`.
