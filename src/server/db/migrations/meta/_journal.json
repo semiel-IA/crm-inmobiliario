@@ -29,6 +29,55 @@
       "when": 1783379782370,
       "tag": "0003_invitations_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783567909475,
+      "tag": "0004_contacts_and_properties_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783568039406,
+      "tag": "0005_contacts_and_properties_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783568041694,
+      "tag": "0006_property_media_cover_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783568043929,
+      "tag": "0007_property_storage_bucket",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783568970455,
+      "tag": "0008_lead_preferences_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783569046805,
+      "tag": "0009_lead_preferences_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783608755206,
+      "tag": "0010_contacts_lead_preferences_created_by",
+      "breakpoints": true
     }
   ]
 }
