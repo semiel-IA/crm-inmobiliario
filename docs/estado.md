@@ -43,7 +43,15 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   suite existente.
 
 ### Tarea T1.3 — UI: Listado y ficha de contactos
-- [pendiente] — Página `/contacts` (tabla con búsqueda/filtros) + `/contacts/[id]` (ficha)
+- [hecho, E2E sin verificar] — `/app/contactos` (tabla con búsqueda, filtros por tipo/estado y
+  paginación de 10, estado vacío), diálogo de creación/edición con `react-hook-form` +
+  `@hookform/resolvers` sobre los schemas Zod de T1.2, y ficha `/app/contactos/[id]` con edición
+  in-situ y desactivación. Se añadieron los primitivos shadcn de F1 (dialog, table, select,
+  checkbox, popover, command, tabs, badge, textarea, alert-dialog, input-group, sonner) y el
+  `Toaster` en el layout raíz. Bug corregido: re-exportar tipos desde un módulo `"use server"`
+  provoca `ReferenceError` en cada llamada a una acción (ver nota en `actions.ts`).
+  Verificado: typecheck limpio, lint limpio, unit 147/147. **E2E `tests/e2e/contacts.spec.ts`
+  escrito pero NO ejecutado** — el proyecto Supabase está caído (ver "Bloqueos" abajo).
 
 ### Tarea T1.4 — Servicio preferencias del lead
 - [pendiente] — Backend de CRUD preferencias (zona, presupuesto, etc.)
@@ -69,7 +77,16 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   hallazgos. Verificado en vivo: unit 138/138 (41 nuevos), RLS 36/36, CI verde (`d3f69f6`).
 
 ### Tarea T1.8 — UI: Listado y ficha de propiedades
-- [pendiente] — Página `/properties` + `/properties/[id]` con galería y detalles
+- [hecho, E2E sin verificar] — `/app/propiedades` (tabla con búsqueda, filtros de
+  tipo/operación/estado/precio y paginación), wizard multi-paso de creación con combobox de
+  propietario sobre los contactos del tenant, y ficha `/app/propiedades/[id]` con cambio de estado
+  y enlace para compartir. La lógica de presentación (labels es-CO, formato COP según
+  venta/arriendo/ambas, constructor de URL pública) vive en `property-helpers.ts` y está cubierta
+  por unit tests. Verificado: typecheck limpio, lint limpio, unit 147/147.
+  **E2E `tests/e2e/properties.spec.ts` escrito pero NO ejecutado** (Supabase caído).
+- Deuda conocida: `listProperties` no tiene filtro de búsqueda por código/barrio/ciudad, así que la
+  página trae hasta 200 filas y filtra en memoria (ver comentario `SEARCH_SCAN_LIMIT` en
+  `page.tsx`). Pendiente añadir un filtro `search` al servicio.
 
 ### Tarea T1.9 — Upload de fotos a Supabase Storage
 - [pendiente] — Drop-zone, validación MIME/tamaño, reordenamiento, portada
@@ -141,6 +158,21 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 | Panel super-admin completo | Pocas features en lanzamiento | Básico: lista de tenants + pago |
 | Onboarding wizard guiado | UX nice-to-have | Landing + signup directo |
 | Firma electrónica, API pública, facturación DIAN | Post-MVP | v2+ |
+
+---
+
+## Bloqueos activos
+
+### 🔴 Proyecto Supabase inaccesible (detectado 2026-07-26)
+`npm run db:ping` falla: Postgres `ENOTFOUND ... postgres.krcsempfrkizmbpqvksz not found` y el
+health de Auth no responde. El E2E preexistente `tests/e2e/auth.spec.ts` —que estaba verde— falla
+en el mismo punto (el registro nunca navega a `/app`), así que **no es una regresión del código
+nuevo**. Causa más probable: los proyectos Supabase del plan gratuito se pausan tras ~1 semana sin
+actividad y el último trabajo fue el 2026-07-09.
+
+**Acción del usuario:** entrar al dashboard de Supabase y reanudar el proyecto (es gratis, no viola
+la regla $0). Mientras tanto quedan bloqueados: `npm run test:e2e`, `npm run test:rls`,
+`npm run db:seed` y cualquier prueba manual de la UI.
 
 ---
 
