@@ -1,14 +1,19 @@
 import { requireUser } from "@/lib/supabase/require-user";
-import { ComingSoon } from "../_components/coming-soon";
+import { getTeamOverview } from "@/server/services/auth";
+import { ContactsList } from "./contacts-list";
 
-/** Placeholder for M1 (Leads y contactos) — arrives in la Fase 1 del plan (T1.1–T1.3). */
+/** Listing page for contacts (T1.3) — search, filters, pagination and "Nuevo contacto". Replaces
+ * the T0.5 `ComingSoon` placeholder now that T1.1–T1.2 (schema + backend) are done. */
 export default async function ContactosPage() {
-  await requireUser();
+  const { tenantId } = await requireUser();
 
-  return (
-    <ComingSoon
-      title="Contactos"
-      description="Gestión de leads y contactos: alta rápida, tipos múltiples, asignación a agentes y timeline de actividades."
-    />
-  );
+  // Active members resolve the "agente asignado" column/dropdown by id → name. Read-only,
+  // server-side reuse of the T0.5 team service (not the admin-only `/app/equipo` action) — see
+  // `docs/plan-fase-1-mvp.md` §T1.3.
+  const { members } = await getTeamOverview({ tenantId });
+  const activeMembers = members
+    .filter((member) => member.status === "active")
+    .map((member) => ({ userId: member.userId, fullName: member.fullName, email: member.email }));
+
+  return <ContactsList members={activeMembers} />;
 }

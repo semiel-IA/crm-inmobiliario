@@ -2,13 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/require-user";
-import {
-  createContactSchema,
-  updateContactSchema,
-  type ContactSource,
-  type ContactType,
-  type LeadStatus,
-} from "@/lib/validations/contacts";
+import { createContactSchema, updateContactSchema } from "@/lib/validations/contacts";
 import type { Contact } from "@/server/db/schema";
 import {
   assignAgent,
@@ -151,5 +145,10 @@ export async function assignAgentAction(
   }
 }
 
-// Re-exported so callers (and T1.3) can import filter/enum types from this single module.
-export type { Contact, ContactSource, ContactType, ContactWithPreferences, LeadStatus };
+// NOTE (T1.3): this file previously re-exported the filter/enum types
+// (`export type { Contact, ContactSource, ... }`). That breaks at runtime: the server-actions
+// loader evaluates every export of a "use server" module as a server reference, and the
+// type-only binding `Contact` doesn't exist at runtime → `ReferenceError: Contact is not
+// defined` (HTTP 500 on every action call from a client component). Import those types from
+// their source modules (`@/server/db/schema`, `@/lib/validations/contacts`,
+// `@/server/services/contacts`) instead.
