@@ -54,7 +54,21 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   escrito pero NO ejecutado** — el proyecto Supabase está caído (ver "Bloqueos" abajo).
 
 ### Tarea T1.4 — Servicio preferencias del lead
-- [pendiente] — Backend de CRUD preferencias (zona, presupuesto, etc.)
+- [hecho] — Zod schemas en `src/lib/validations/lead-preferences.ts` (reutiliza `PROPERTY_TYPES` de
+  properties en vez de duplicar la lista; `operationType` limitado a venta|arriendo para respetar el
+  check constraint de la tabla; `getLeadPreferenceRangeIssues` valida presupuesto min<max y estrato
+  min<=max, mismo patrón que `getOperationPricingIssues`) y servicio en
+  `src/server/services/lead-preferences.ts` (`createPreference`, `updatePreference` que re-valida
+  los rangos contra el estado mezclado, `getPreference`, `listPreferences`) + Server Actions en
+  `contactos/actions.ts`. Todas las queries filtran por `tenant_id` y las escrituras verifican que
+  el contacto pertenece al tenant antes de tocar la fila.
+  Revisión del orquestador 2026-07-26: se devolvió un hallazgo bloqueante — `getPreference`
+  buscaba solo por `(contactId, tenantId)` con `.limit(1)`, pero el índice único de T1.1 es
+  `(tenant_id, contact_id, operation_type)` a propósito (un contacto mixto comprador+arrendatario
+  tiene dos filas), así que devolvía una fila arbitraria y ocultaba la otra. Corregido:
+  `getPreference` ahora exige `operationType` (clave única completa) y se añadió `listPreferences`
+  con `ORDER BY` explícito — esa es la API que debe consumir T1.5.
+  Verificado en vivo: typecheck limpio, lint limpio, unit 176/176 (29 nuevos).
 
 ### Tarea T1.5 — UI: Sub-formulario de preferencias
 - [pendiente] — Formulario en ficha de contacto para editar preferencias

@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/require-user";
 import { createContactSchema, updateContactSchema } from "@/lib/validations/contacts";
-import type { Contact } from "@/server/db/schema";
+import {
+  createLeadPreferenceSchema,
+  updateLeadPreferenceSchema,
+} from "@/lib/validations/lead-preferences";
+import type { Contact, LeadPreference } from "@/server/db/schema";
 import {
   assignAgent,
   ContactError,
@@ -15,6 +19,14 @@ import {
   type ContactWithPreferences,
   type ListContactsFilters,
 } from "@/server/services/contacts";
+import {
+  createPreference,
+  getPreference,
+  LeadPreferenceError,
+  listPreferences,
+  updatePreference,
+} from "@/server/services/lead-preferences";
+import type { LeadPreferenceOperationType } from "@/lib/validations/lead-preferences";
 
 /**
  * Server Actions for the contacts CRUD (T1.2) — thin layer per `CLAUDE.md`/plan §2.4: re-verify
@@ -142,6 +154,88 @@ export async function assignAgentAction(
     return { data: contact };
   } catch (error) {
     return { error: toErrorMessage(error) };
+  }
+}
+
+/** Maps a thrown error (typed `LeadPreferenceError` or unknown) to an es-CO message safe to show. */
+function toLeadPreferenceErrorMessage(error: unknown): string {
+  if (error instanceof LeadPreferenceError) {
+    return error.message;
+  }
+  console.error("Acción de preferencias falló:", error);
+  return "Ocurrió un error inesperado. Intenta de nuevo.";
+}
+
+export async function createLeadPreferenceAction(
+  contactId: string,
+  input: unknown,
+): Promise<ContactActionState<LeadPreference>> {
+  const { tenantId, user } = await requireUser();
+
+  const parsed = createLeadPreferenceSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  try {
+    const preference = await createPreference(
+      { ...parsed.data, contactId, tenantId, actorUserId: user.id },
+      {},
+    );
+    revalidateContacts();
+    return { data: preference };
+  } catch (error) {
+    return { error: toLeadPreferenceErrorMessage(error) };
+  }
+}
+
+export async function updateLeadPreferenceAction(
+  id: string,
+  input: unknown,
+): Promise<ContactActionState<LeadPreference>> {
+  const { tenantId } = await requireUser();
+
+  const parsed = updateLeadPreferenceSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  try {
+    const preference = await updatePreference({ id, tenantId, ...parsed.data }, {});
+    revalidateContacts();
+    return { data: preference };
+  } catch (error) {
+    return { error: toLeadPreferenceErrorMessage(error) };
+  }
+}
+
+export async function getLeadPreferenceAction(
+  contactId: string,
+  operationType: LeadPreferenceOperationType,
+): Promise<ContactActionState<LeadPreference | null>> {
+  const { tenantId } = await requireUser();
+
+  try {
+    const preference = await getPreference({ contactId, tenantId, operationType }, {});
+    return { data: preference };
+  } catch (error) {
+    return { error: toLeadPreferenceErrorMessage(error) };
+  }
+}
+
+/** Lists every lead-preference row for a contact (at most one per operation type — venta and/or
+ * arriendo). This is what T1.5 should call to render both sub-forms for a mixed buyer+renter
+ * contact; `getLeadPreferenceAction` is for looking up a single known operation type. */
+export async function listLeadPreferencesAction(
+  contactId: string,
+): Promise<ContactActionState<LeadPreference[]>> {
+  const { tenantId } = await requireUser();
+
+  try {
+    const preferences = await listPreferences({ contactId, tenantId }, {});
+    return { data: preferences };
+  } catch (error) {
+    return { error: toLeadPreferenceErrorMessage(error) };
   }
 }
 
