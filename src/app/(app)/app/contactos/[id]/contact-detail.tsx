@@ -26,11 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCOP } from "@/lib/format";
 import type { ContactSource, ContactType, LeadStatus } from "@/lib/validations/contacts";
 import type { ContactWithPreferences } from "@/server/services/contacts";
 import { assignAgentAction, deactivateContactAction } from "../actions";
 import { ContactFormDialog } from "../contact-form-dialog";
+import { LeadPreferencesPanel } from "../lead-preferences-panel";
 import {
   CONTACT_SOURCE_LABELS,
   CONTACT_TYPE_LABELS,
@@ -40,17 +40,6 @@ import {
 import type { MemberOption } from "../contacts-list";
 
 const dateFormatter = new Intl.DateTimeFormat("es-CO", { dateStyle: "medium" });
-
-const OPERATION_LABELS: Record<string, string> = { venta: "Venta", arriendo: "Arriendo" };
-const PROPERTY_TYPE_LABELS: Record<string, string> = {
-  apartamento: "Apartamento",
-  casa: "Casa",
-  lote: "Lote",
-  local: "Local",
-  oficina: "Oficina",
-  bodega: "Bodega",
-  finca: "Finca",
-};
 
 export function ContactDetail({
   contact: initialContact,
@@ -239,67 +228,13 @@ export function ContactDetail({
         <CardHeader>
           <CardTitle className="text-base">Preferencias</CardTitle>
           <CardDescription>
-            Lo que este contacto busca (operación, zonas, presupuesto). El formulario para
-            editarlas llega en una siguiente iteración.
+            Lo que este contacto busca: operación, tipos de inmueble, zonas, presupuesto y
+            requisitos mínimos. Un contacto comprador+arrendatario puede tener preferencias
+            separadas para venta y arriendo — cámbialas de pestaña.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {contact.leadPreferences.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Aún no hay preferencias registradas para este contacto.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-4">
-              {contact.leadPreferences.map((pref) => (
-                <li key={pref.id} className="rounded-lg border border-border p-3">
-                  <p className="mb-2 text-sm font-medium">
-                    {OPERATION_LABELS[pref.operationType] ?? pref.operationType}
-                  </p>
-                  <dl className="grid gap-2 text-sm sm:grid-cols-2">
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Tipos de inmueble</dt>
-                      <dd>
-                        {pref.propertyTypes.length > 0
-                          ? pref.propertyTypes
-                              .map((t) => PROPERTY_TYPE_LABELS[t] ?? t)
-                              .join(", ")
-                          : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Zonas</dt>
-                      <dd>{pref.zones.length > 0 ? pref.zones.join(", ") : "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Presupuesto</dt>
-                      <dd>
-                        {pref.budgetMinCop != null || pref.budgetMaxCop != null
-                          ? `${pref.budgetMinCop != null ? formatCOP(pref.budgetMinCop) : "—"} – ${
-                              pref.budgetMaxCop != null ? formatCOP(pref.budgetMaxCop) : "—"
-                            }`
-                          : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Estrato</dt>
-                      <dd>
-                        {pref.minStratum != null || pref.maxStratum != null
-                          ? `${pref.minStratum ?? "—"} – ${pref.maxStratum ?? "—"}`
-                          : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Habitaciones / baños / parqueaderos mín.</dt>
-                      <dd>
-                        {pref.minBedrooms ?? "—"} / {pref.minBathrooms ?? "—"} /{" "}
-                        {pref.minParkingSpots ?? "—"}
-                      </dd>
-                    </div>
-                  </dl>
-                </li>
-              ))}
-            </ul>
-          )}
+          <LeadPreferencesPanel contactId={contact.id} preferences={contact.leadPreferences} />
         </CardContent>
       </Card>
 

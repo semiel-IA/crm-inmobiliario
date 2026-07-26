@@ -71,7 +71,16 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   Verificado en vivo: typecheck limpio, lint limpio, unit 176/176 (29 nuevos).
 
 ### Tarea T1.5 — UI: Sub-formulario de preferencias
-- [pendiente] — Formulario en ficha de contacto para editar preferencias
+- [hecho, E2E sin verificar] — `LeadPreferencesPanel` en la ficha de contacto: una pestaña por
+  operación (Venta / Arriendo, la que no tiene fila se marca "(sin registrar)"), cada una con su
+  `LeadPreferenceForm` independiente y su `operationType` fijo, de modo que guardar en una pestaña
+  no puede pisar la fila de la otra (respeta el índice único
+  `(tenant_id, contact_id, operation_type)`). Reutiliza los schemas Zod de T1.4 vía `zodResolver`
+  sin duplicar reglas en cliente; toasts con `sonner`. Lógica pura (labels es-CO, parseo de zonas
+  separadas por coma, fila DB → defaults de RHF) en `lead-preference-helpers.ts` con unit tests.
+  No hizo falta un fetch extra: `getContact` ya devuelve todas las filas de preferencias.
+  Verificado: typecheck limpio, lint limpio, unit 183/183 (7 nuevos). **Sin cobertura E2E**: el
+  spec no se extendió y la BD sigue caída.
 
 ### Tarea T1.6 — Esquema propiedades
 - [hecho] — Migraciones `properties`, `property_media`, `property_documents` (0004/0005), trigger
