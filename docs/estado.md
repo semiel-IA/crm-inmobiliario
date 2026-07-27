@@ -210,6 +210,14 @@ bloqueaba `test:e2e`, `test:rls`, `db:seed` y toda prueba manual. Se reanudó de
 Para diagnosticarlo: `npm run db:ping`; si además falla un E2E preexistente que estaba verde, es el
 entorno y no una regresión del código nuevo.
 
+### Despliegue
+`docs/despliegue.md` tiene el procedimiento para Vercel Hobby. Preparado el 2026-07-26 pero **sin
+desplegar**: falta que el usuario cree la cuenta de Vercel y conecte el repo. `npm run build` pasa
+(13 rutas) y `.env*` está fuera del repo. `getDb()` quedó configurado para serverless (`max: 1`,
+`prepare: false`) porque en Vercel hay que usar el *transaction pooler* de Supabase (puerto 6543):
+la conexión directa es solo IPv6 y las lambdas son IPv4, y el pooler no admite sentencias
+preparadas.
+
 ### El pool de conexiones se agota (límite 15)
 Correr la suite E2E varias veces seguidas agota el pool de Supabase
 (`EMAXCONNSESSION — max clients are limited to pool_size: 15`) y entonces *todos* los tests de
