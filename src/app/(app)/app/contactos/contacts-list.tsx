@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -363,13 +363,14 @@ export function ContactsList({ members }: { members: MemberOption[] }) {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            render={<Link href={`/app/contactos/${contact.id}`} />}
+                          {/* Styled <Link>, not <Button render={<Link/>}>: keeps real link
+                              semantics (see the note in ../propiedades/page.tsx). */}
+                          <Link
+                            href={`/app/contactos/${contact.id}`}
+                            className={buttonVariants({ variant: "outline", size: "sm" })}
                           >
                             Ver
-                          </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>

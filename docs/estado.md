@@ -43,15 +43,15 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   suite existente.
 
 ### Tarea T1.3 — UI: Listado y ficha de contactos
-- [hecho, E2E sin verificar] — `/app/contactos` (tabla con búsqueda, filtros por tipo/estado y
+- [hecho] — `/app/contactos` (tabla con búsqueda, filtros por tipo/estado y
   paginación de 10, estado vacío), diálogo de creación/edición con `react-hook-form` +
   `@hookform/resolvers` sobre los schemas Zod de T1.2, y ficha `/app/contactos/[id]` con edición
   in-situ y desactivación. Se añadieron los primitivos shadcn de F1 (dialog, table, select,
   checkbox, popover, command, tabs, badge, textarea, alert-dialog, input-group, sonner) y el
   `Toaster` en el layout raíz. Bug corregido: re-exportar tipos desde un módulo `"use server"`
   provoca `ReferenceError` en cada llamada a una acción (ver nota en `actions.ts`).
-  Verificado: typecheck limpio, lint limpio, unit 147/147. **E2E `tests/e2e/contacts.spec.ts`
-  escrito pero NO ejecutado** — el proyecto Supabase está caído (ver "Bloqueos" abajo).
+  Verificado en vivo 2026-07-26 con la BD ya activa: typecheck y lint limpios, unit 185/185,
+  E2E `tests/e2e/contacts.spec.ts` 5/5, RLS 36/36.
 
 ### Tarea T1.4 — Servicio preferencias del lead
 - [hecho] — Zod schemas en `src/lib/validations/lead-preferences.ts` (reutiliza `PROPERTY_TYPES` de
@@ -71,7 +71,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   Verificado en vivo: typecheck limpio, lint limpio, unit 176/176 (29 nuevos).
 
 ### Tarea T1.5 — UI: Sub-formulario de preferencias
-- [hecho, E2E sin verificar] — `LeadPreferencesPanel` en la ficha de contacto: una pestaña por
+- [hecho] — `LeadPreferencesPanel` en la ficha de contacto: una pestaña por
   operación (Venta / Arriendo, la que no tiene fila se marca "(sin registrar)"), cada una con su
   `LeadPreferenceForm` independiente y su `operationType` fijo, de modo que guardar en una pestaña
   no puede pisar la fila de la otra (respeta el índice único
@@ -79,8 +79,9 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   sin duplicar reglas en cliente; toasts con `sonner`. Lógica pura (labels es-CO, parseo de zonas
   separadas por coma, fila DB → defaults de RHF) en `lead-preference-helpers.ts` con unit tests.
   No hizo falta un fetch extra: `getContact` ya devuelve todas las filas de preferencias.
-  Verificado: typecheck limpio, lint limpio, unit 183/183 (7 nuevos). **Sin cobertura E2E**: el
-  spec no se extendió y la BD sigue caída.
+  Verificado: typecheck limpio, lint limpio, unit 185/185 (7 nuevos).
+- Deuda conocida: **sin cobertura E2E propia**. `tests/e2e/contacts.spec.ts` no se extendió con el
+  flujo de editar preferencias; la verificación de T1.5 es solo unit + typecheck.
 
 ### Tarea T1.6 — Esquema propiedades
 - [hecho] — Migraciones `properties`, `property_media`, `property_documents` (0004/0005), trigger
@@ -100,13 +101,30 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   hallazgos. Verificado en vivo: unit 138/138 (41 nuevos), RLS 36/36, CI verde (`d3f69f6`).
 
 ### Tarea T1.8 — UI: Listado y ficha de propiedades
-- [hecho, E2E sin verificar] — `/app/propiedades` (tabla con búsqueda, filtros de
+- [hecho] — `/app/propiedades` (tabla con búsqueda, filtros de
   tipo/operación/estado/precio y paginación), wizard multi-paso de creación con combobox de
   propietario sobre los contactos del tenant, y ficha `/app/propiedades/[id]` con cambio de estado
   y enlace para compartir. La lógica de presentación (labels es-CO, formato COP según
   venta/arriendo/ambas, constructor de URL pública) vive en `property-helpers.ts` y está cubierta
-  por unit tests. Verificado: typecheck limpio, lint limpio, unit 147/147.
-  **E2E `tests/e2e/properties.spec.ts` escrito pero NO ejecutado** (Supabase caído).
+  por unit tests. Verificado en vivo 2026-07-26 con la BD ya activa: typecheck y lint limpios,
+  unit 185/185, E2E `tests/e2e/properties.spec.ts` 4/4, RLS 36/36.
+- La primera ejecución real de los E2E (2026-07-26) destapó **cuatro bugs de producto** que el
+  typecheck y los unit tests no podían ver; todos corregidos en el mismo commit:
+  1. **Campos opcionales bloqueaban el wizard.** Los `<Input>` opcionales vacíos entregan `""`, y
+     `z.string().trim().min(1).optional()` rechaza `""` (solo admite `undefined`), así que dejar
+     "Dirección privada" o "Departamento" en blanco impedía pasar del paso 2. T1.2 ya había
+     resuelto esto en `contacts.ts` con `emptyToUndefined`; se aplicó la misma convención a
+     `properties.ts`. Cubierto por unit test de regresión.
+  2. **El paso "Confirmar" era inalcanzable.** Al pulsar "Siguiente" en el paso 3, React reutiliza
+     el nodo DOM del botón, que pasa a `type="submit"`, y el navegador completaba el submit nativo
+     de ese mismo clic: la propiedad se creaba y el diálogo se cerraba sin confirmación. El botón
+     final es ahora `type="button"` con `onClick` explícito.
+  3. **Combobox de propietario sin nombre accesible.** El `<Label htmlFor="wizard-owner">` apuntaba
+     a un id inexistente porque `OwnerCombobox` no reenviaba `id`; como el rol `combobox` no toma
+     su nombre del contenido, el control quedaba sin nombre para lectores de pantalla.
+  4. **Enlaces anunciados como botones.** `<Button render={<Link/>}>` conserva semántica de botón
+     sobre el `<a>` (con `nativeButton={false}` fuerza `role="button"`; sin él, Base UI advierte).
+     Los enlaces con aspecto de botón usan ahora `<Link className={buttonVariants(...)}>`.
 - Deuda conocida: `listProperties` no tiene filtro de búsqueda por código/barrio/ciudad, así que la
   página trae hasta 200 filas y filtra en memoria (ver comentario `SEARCH_SCAN_LIMIT` en
   `page.tsx`). Pendiente añadir un filtro `search` al servicio.
@@ -184,18 +202,19 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 
 ---
 
-## Bloqueos activos
+## Notas de operación
 
-### 🔴 Proyecto Supabase inaccesible (detectado 2026-07-26)
-`npm run db:ping` falla: Postgres `ENOTFOUND ... postgres.krcsempfrkizmbpqvksz not found` y el
-health de Auth no responde. El E2E preexistente `tests/e2e/auth.spec.ts` —que estaba verde— falla
-en el mismo punto (el registro nunca navega a `/app`), así que **no es una regresión del código
-nuevo**. Causa más probable: los proyectos Supabase del plan gratuito se pausan tras ~1 semana sin
-actividad y el último trabajo fue el 2026-07-09.
+### Supabase se pausa por inactividad
+El 2026-07-26 el proyecto estaba pausado (los del plan gratuito se pausan tras ~1 semana sin uso) y
+bloqueaba `test:e2e`, `test:rls`, `db:seed` y toda prueba manual. Se reanudó desde el dashboard.
+Para diagnosticarlo: `npm run db:ping`; si además falla un E2E preexistente que estaba verde, es el
+entorno y no una regresión del código nuevo.
 
-**Acción del usuario:** entrar al dashboard de Supabase y reanudar el proyecto (es gratis, no viola
-la regla $0). Mientras tanto quedan bloqueados: `npm run test:e2e`, `npm run test:rls`,
-`npm run db:seed` y cualquier prueba manual de la UI.
+### El pool de conexiones se agota (límite 15)
+Correr la suite E2E varias veces seguidas agota el pool de Supabase
+(`EMAXCONNSESSION — max clients are limited to pool_size: 15`) y entonces *todos* los tests de
+registro fallan a la vez, imitando una caída del proyecto. Se resuelve parando el dev server y
+esperando ~15 s.
 
 ---
 

@@ -111,7 +111,7 @@ test("2. crear propiedad vía wizard: validación de precio y código autogenera
   await expect(page.getByText("Paso 1 de 4")).toBeVisible();
 
   // Paso 1: tipo (Apartamento) y operación (Venta) vienen por defecto. Seleccionar propietario.
-  await page.getByRole("combobox", { name: "Selecciona un propietario…" }).click();
+  await page.getByRole("combobox", { name: "Propietario" }).click();
   await page.getByPlaceholder("Buscar por nombre o teléfono…").fill("Propietario E2E");
   await page.getByRole("option", { name: new RegExp(OWNER_NAME) }).click();
 
@@ -140,6 +140,13 @@ test("2. crear propiedad vía wizard: validación de precio y código autogenera
 
   // Paso 4: confirmar muestra el resumen y crea.
   await expect(page.getByRole("dialog").getByText("El Poblado, Medellín")).toBeVisible();
+
+  // Regresión: llegar al paso 4 no debe haber enviado nada todavía. Al pulsar "Siguiente" en el
+  // paso 3, React reutilizaba el nodo DOM del botón, que pasaba a `type="submit"`, y el navegador
+  // completaba el submit nativo de ese mismo clic: la propiedad se creaba y el diálogo se cerraba
+  // sin pasar por la confirmación. Un botón habilitado prueba que no hay envío en curso.
+  await expect(page.getByRole("button", { name: "Crear propiedad" })).toBeEnabled();
+
   await page.getByRole("button", { name: "Crear propiedad" }).click();
 
   // La propiedad aparece en el listado con el código interno autogenerado.
@@ -171,6 +178,11 @@ test("3. ficha: cambiar estado a 'Reservada' persiste", async ({ page }) => {
   await page.getByRole("option", { name: "Reservada" }).click();
 
   await expect(page.getByTestId("property-status-trigger")).toContainText("Reservada");
+
+  // El texto de arriba es el estado optimista local del Select, que cambia al instante. Hay que
+  // esperar la confirmación del servidor antes de recargar: si no, el reload puede adelantarse a
+  // la Server Action y la ficha se repinta con el valor viejo de la BD.
+  await expect(page.getByText("Estado actualizado a «Reservada».")).toBeVisible();
 
   // Persiste tras recargar la página.
   await page.reload();

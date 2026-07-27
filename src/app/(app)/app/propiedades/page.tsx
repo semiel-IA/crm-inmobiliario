@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+/**
+ * Links that look like buttons are styled `<Link>`s, not `<Button render={<Link/>}>`: Base UI's
+ * Button either keeps `role="button"` on the anchor (destroying link semantics for assistive tech
+ * and for "open in new tab") or warns that a non-`<button>` was rendered. `buttonVariants` gives
+ * the same visuals while the element stays a real link.
+ */
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -192,14 +198,12 @@ export default async function PropiedadesPage({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      render={<Link href={`/app/propiedades/${property.id}`} />}
-                      nativeButton={false}
+                    <Link
+                      href={`/app/propiedades/${property.id}`}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
                     >
                       Ver ficha
-                    </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
@@ -215,28 +219,24 @@ export default async function PropiedadesPage({
           </p>
           <div className="flex gap-2">
             {page > 1 ? (
-              <Button
-                variant="outline"
-                size="sm"
-                render={<Link href={pageHref(page - 1)} />}
-                nativeButton={false}
+              <Link
+                href={pageHref(page - 1)}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 Anterior
-              </Button>
+              </Link>
             ) : (
               <Button variant="outline" size="sm" disabled>
                 Anterior
               </Button>
             )}
             {page < totalPages ? (
-              <Button
-                variant="outline"
-                size="sm"
-                render={<Link href={pageHref(page + 1)} />}
-                nativeButton={false}
+              <Link
+                href={pageHref(page + 1)}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 Siguiente
-              </Button>
+              </Link>
             ) : (
               <Button variant="outline" size="sm" disabled>
                 Siguiente

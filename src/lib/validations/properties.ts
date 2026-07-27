@@ -32,6 +32,22 @@ const nonNegativeInt = (label: string) =>
     .int({ error: `${label} debe ser un número entero.` })
     .nonnegative({ error: `${label} no puede ser negativo.` });
 
+/** Treats an empty/whitespace string as "not provided" so callers (forms included) can send `""`
+ * for an untouched optional field instead of omitting the key. Same helper and rationale as
+ * `emptyToUndefined` in `src/lib/validations/contacts.ts` (T1.2) — without it, a field the user
+ * simply left blank arrives as `""` from `react-hook-form`'s `register()` and fails the
+ * `.min(1)`/non-empty check even though the field is optional. */
+function emptyToUndefined(value: unknown) {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+  return value;
+}
+
+/** Optional free-text field: blank counts as omitted, otherwise trimmed and length-capped. */
+const optionalText = (maxLength: number, tooLongMessage: string) =>
+  z.preprocess(emptyToUndefined, z.string().trim().max(maxLength, { error: tooLongMessage }).optional());
+
 const propertyObjectSchema = z.object({
   propertyType: z.enum(PROPERTY_TYPES, { error: "Selecciona un tipo de propiedad válido." }),
   operationType: z.enum(OPERATION_TYPES, { error: "Selecciona un tipo de operación válido." }),
@@ -48,10 +64,10 @@ const propertyObjectSchema = z.object({
     .min(1, { error: "El estrato debe estar entre 1 y 6." })
     .max(6, { error: "El estrato debe estar entre 1 y 6." })
     .optional(),
-  privateAddress: z.string().trim().min(1).max(255).optional(),
-  neighborhood: z.string().trim().min(1).max(120).optional(),
-  city: z.string().trim().min(1).max(120).optional(),
-  department: z.string().trim().min(1).max(120).optional(),
+  privateAddress: optionalText(255, "La dirección es demasiado larga."),
+  neighborhood: optionalText(120, "El barrio es demasiado largo."),
+  city: optionalText(120, "La ciudad es demasiado larga."),
+  department: optionalText(120, "El departamento es demasiado largo."),
   lat: z
     .number()
     .min(-90, { error: "La latitud debe estar entre -90 y 90." })
@@ -62,7 +78,7 @@ const propertyObjectSchema = z.object({
     .min(-180, { error: "La longitud debe estar entre -180 y 180." })
     .max(180, { error: "La longitud debe estar entre -180 y 180." })
     .optional(),
-  registrationNumber: z.string().trim().min(1).max(120).optional(),
+  registrationNumber: optionalText(120, "La matrícula inmobiliaria es demasiado larga."),
   exclusivity: z.boolean().optional(),
   exclusivityUntil: z.iso.date({ error: "La fecha de exclusividad no es válida." }).optional(),
   commissionPercentage: z
@@ -70,7 +86,7 @@ const propertyObjectSchema = z.object({
     .min(0, { error: "La comisión debe estar entre 0 y 100." })
     .max(100, { error: "La comisión debe estar entre 0 y 100." })
     .optional(),
-  description: z.string().trim().max(4000).optional(),
+  description: optionalText(4000, "La descripción es demasiado larga."),
 });
 
 export type OperationPricingIssue = {

@@ -84,10 +84,11 @@ test("1. como admin, el nav muestra todos los módulos", async ({ page }) => {
     await expect(nav.getByRole("link", { name: label })).toBeVisible();
   }
 
-  // Placeholder modules render without crashing and show the "Próximamente" notice.
+  // Navegar a un módulo ya implementado lo renderiza sin romperse. (Contactos dejó de ser un
+  // placeholder "Próximamente" en T1.3; aquí solo se comprueba que el nav lleva a la página real.)
   await nav.getByRole("link", { name: "Contactos" }).click();
   await page.waitForURL("**/app/contactos");
-  await expect(page.getByText("Próximamente")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Contactos" })).toBeVisible();
 });
 
 test("2. el admin renombra la inmobiliaria desde Configuración", async ({ page }) => {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCOP } from "@/lib/format";
 import { requireUser } from "@/lib/supabase/require-user";
@@ -95,9 +95,12 @@ export default async function PropiedadFichaPage({
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
       <div>
-        <Button variant="ghost" size="sm" render={<Link href="/app/propiedades" />} nativeButton={false}>
+        <Link
+          href="/app/propiedades"
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
+        >
           <ArrowLeft /> Volver al listado
-        </Button>
+        </Link>
       </div>
 
       <header className="flex flex-wrap items-start justify-between gap-4">

@@ -39,6 +39,37 @@ describe("createPropertySchema — validaciones", () => {
     expect(result.success).toBe(true);
   });
 
+  // Regresión: el wizard (T1.8) registra los campos de texto opcionales con `register()`, así que
+  // un campo que el usuario deja en blanco llega como `""`, no como `undefined`. Con
+  // `z.string().trim().min(1).optional()` eso fallaba la validación y dejaba al usuario atascado
+  // en el paso 2 sin poder avanzar, pese a que los campos son opcionales. Mismo tratamiento que
+  // `emptyToUndefined` en `src/lib/validations/contacts.ts` (T1.2).
+  it("treats blank optional text fields as omitted", () => {
+    const result = createPropertySchema.safeParse({
+      ...basePropertyInput,
+      privateAddress: "",
+      neighborhood: "   ",
+      city: "",
+      department: "",
+      registrationNumber: "",
+      description: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.privateAddress).toBeUndefined();
+      expect(result.data.neighborhood).toBeUndefined();
+      expect(result.data.department).toBeUndefined();
+    }
+  });
+
+  it("still rejects an optional text field that exceeds its max length", () => {
+    const result = createPropertySchema.safeParse({
+      ...basePropertyInput,
+      city: "x".repeat(121),
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects 'venta' without salePriceCop", () => {
     const result = createPropertySchema.safeParse({
       propertyType: "apartamento",

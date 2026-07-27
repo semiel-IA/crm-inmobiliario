@@ -33,8 +33,10 @@ import {
   createPropertySchema,
   OPERATION_TYPES,
   PROPERTY_TYPES,
-  type CreatePropertyInput,
+  type OperationType,
+  type PropertyType,
 } from "@/lib/validations/properties";
+import type { z } from "zod";
 import type { Property } from "@/server/db/schema";
 import { createPropertyAction, updatePropertyAction } from "./actions";
 import { OwnerCombobox } from "./owner-combobox";
@@ -61,7 +63,7 @@ import {
 
 type StepId = "basico" | "ubicacion" | "caracteristicas" | "confirmar";
 
-const STEPS: { id: StepId; title: string; fields: (keyof CreatePropertyInput)[] }[] = [
+const STEPS: { id: StepId; title: string; fields: (keyof FormInput)[] }[] = [
   {
     id: "basico",
     title: "Datos básicos",
@@ -103,13 +105,22 @@ export type PropertyWizardProps =
       onSuccess?: (id: string) => void;
     };
 
-function toDefaultValues(property: PropertyForEdit | undefined): Partial<CreatePropertyInput> {
+/**
+ * The schema preprocesses blank optional text fields to `undefined`, so its input and output
+ * shapes differ (`z.input` has `unknown` where `z.output` has `string | undefined`). The form
+ * therefore holds the INPUT shape and `handleSubmit` receives the OUTPUT shape — same
+ * three-type-parameter `useForm` pattern as `contactos/contact-form.tsx`.
+ */
+type FormInput = z.input<typeof createPropertySchema>;
+type FormOutput = z.output<typeof createPropertySchema>;
+
+function toDefaultValues(property: PropertyForEdit | undefined): Partial<FormInput> {
   if (!property) {
     return { propertyType: "apartamento", operationType: "venta", exclusivity: false };
   }
   return {
-    propertyType: property.propertyType as CreatePropertyInput["propertyType"],
-    operationType: property.operationType as CreatePropertyInput["operationType"],
+    propertyType: property.propertyType as PropertyType,
+    operationType: property.operationType as OperationType,
     ownerContactId: property.ownerContactId,
     salePriceCop: property.salePriceCop ?? undefined,
     monthlyRentCop: property.monthlyRentCop ?? undefined,
@@ -138,7 +149,7 @@ export function PropertyWizard(props: PropertyWizardProps) {
   const [step, setStep] = useState(0);
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
-  const form = useForm<CreatePropertyInput>({
+  const form = useForm<FormInput, unknown, FormOutput>({
     resolver: zodResolver(createPropertySchema),
     defaultValues: toDefaultValues(property),
   });
@@ -169,7 +180,22 @@ export function PropertyWizard(props: PropertyWizardProps) {
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  async function onSubmit(values: CreatePropertyInput) {
+  /**
+   * A multi-step wizard must never submit from an intermediate step, so native form submission is
+   * only honored on the last one. This covers pressing Enter inside a text input; the footer's
+   * submit button is additionally a plain `type="button"` (see its comment) because by the time a
+   * native submit fires, `goNext`'s `await` has already advanced `step`, making a step check alone
+   * insufficient. See the E2E regression in `tests/e2e/properties.spec.ts`.
+   */
+  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (step !== STEPS.length - 1) {
+      event.preventDefault();
+      return;
+    }
+    void handleSubmit(onSubmit)(event);
+  }
+
+  async function onSubmit(values: FormOutput) {
     setServerError(undefined);
 
     if (mode === "create") {
@@ -243,7 +269,7 @@ export function PropertyWizard(props: PropertyWizardProps) {
           ))}
         </ol>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
           {step === 0 && (
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
@@ -317,6 +343,7 @@ export function PropertyWizard(props: PropertyWizardProps) {
                   name="ownerContactId"
                   render={({ field }) => (
                     <OwnerCombobox
+                      id="wizard-owner"
                       value={field.value}
                       onChange={field.onChange}
                       initialLabel={props.ownerLabel}
@@ -592,10 +619,13 @@ export function PropertyWizard(props: PropertyWizardProps) {
               const values = getValues();
               return (
                 <div className="flex flex-col gap-2 text-sm">
-                  <SummaryRow label="Tipo" value={PROPERTY_TYPE_LABELS[values.propertyType]} />
+                  <SummaryRow
+                    label="Tipo"
+                    value={PROPERTY_TYPE_LABELS[values.propertyType as PropertyType]}
+                  />
                   <SummaryRow
                     label="Operación"
-                    value={OPERATION_TYPE_LABELS[values.operationType]}
+                    value={OPERATION_TYPE_LABELS[values.operationType as OperationType]}
                   />
                   <SummaryRow
                     label="Precio"
@@ -641,7 +671,17 @@ export function PropertyWizard(props: PropertyWizardProps) {
                   Siguiente <ChevronRight />
                 </Button>
               ) : (
-                <Button type="submit" disabled={formState.isSubmitting}>
+                /* Deliberately `type="button"` + explicit onClick rather than `type="submit"`:
+                   React reuses this DOM node when "Siguiente" turns into this button on the last
+                   step, and a native submit button would let the browser complete the default
+                   submit for the very click that advanced the step — creating the property and
+                   closing the dialog without ever showing the confirm step. A non-submit button
+                   has no default action, so the only way to submit is a real click here. */
+                <Button
+                  type="button"
+                  onClick={() => void handleSubmit(onSubmit)()}
+                  disabled={formState.isSubmitting}
+                >
                   {formState.isSubmitting && <Loader2 className="animate-spin" />}
                   {mode === "create" ? "Crear propiedad" : "Guardar cambios"}
                 </Button>

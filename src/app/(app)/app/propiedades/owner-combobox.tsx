@@ -32,6 +32,14 @@ type OwnerOption = { id: string; label: string };
 export type OwnerComboboxProps = {
   value: string | undefined;
   onChange: (value: string) => void;
+  /**
+   * Applied to the trigger so a sibling `<Label htmlFor={id}>` actually associates with it. This
+   * is required, not cosmetic: the trigger has `role="combobox"`, and `combobox` does NOT support
+   * "name from content" (unlike `button`), so without a label association the control ends up with
+   * NO accessible name at all — its visible "Selecciona un propietario…" text does not count.
+   * Mirrors how the sibling fields pass `id` to `SelectTrigger` in `property-wizard.tsx`.
+   */
+  id?: string;
   /** Label to show for a `value` preset from outside (edit mode) before any options load. */
   initialLabel?: string;
   disabled?: boolean;
@@ -39,6 +47,7 @@ export type OwnerComboboxProps = {
 };
 
 export function OwnerCombobox({
+  id,
   value,
   onChange,
   initialLabel,
@@ -79,6 +88,7 @@ export function OwnerCombobox({
         disabled={disabled}
         render={
           <Button
+            id={id}
             type="button"
             variant="outline"
             role="combobox"
