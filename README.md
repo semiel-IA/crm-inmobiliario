@@ -23,6 +23,11 @@ Estado del proyecto: fase de fundaciones (F0). Ver `docs/plan-maestro.md` para e
    si `DATABASE_URL` ya tiene la contraseña real (sin el placeholder
    `[DB_PASSWORD_PENDIENTE]`), también prueba la conexión directa a Postgres.
 
+> **`DATABASE_URL` debe apuntar al transaction pooler (puerto 6543).** Ni la conexión directa
+> (`db.<ref>.supabase.co`, ya no se expone) ni el session pooler (puerto 5432, devuelve
+> `28P01 password authentication failed` incluso con la contraseña correcta) funcionan en este
+> proyecto. Ante un `28P01`, revisa el puerto antes de sospechar de la contraseña.
+
 ## Comandos
 
 | Comando               | Descripción                                                                                                                              |
@@ -47,6 +52,38 @@ Next.js (App Router) + TypeScript + Tailwind CSS + shadcn/ui. Supabase (Auth + P
 Drizzle ORM conectado desde T0.2; esquema núcleo SaaS (`tenants`, `plans`, `memberships`,
 `audit_log`, `invitations`) + Row Level Security desde T0.3; auth multi-tenant completo (registro,
 login, invitaciones por link, roles) y tests E2E con Playwright desde T0.4.
+
+## Despliegue en Vercel
+
+Next.js se autodetecta: no hace falta `vercel.json` ni ajustar los comandos de build.
+
+1. **Importa el repositorio** en Vercel (Add New → Project). Framework: Next.js.
+2. **Carga las variables de entorno** (Project Settings → Environment Variables). Son las mismas
+   de `.env` más `APP_URL`:
+
+   | Variable                        | Ámbito             | Notas                                            |
+   | ------------------------------- | ------------------ | ------------------------------------------------ |
+   | `NEXT_PUBLIC_SUPABASE_URL`      | Production/Preview | Pública, se expone al navegador                  |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production/Preview | Pública, protegida por RLS                       |
+   | `SUPABASE_SERVICE_ROLE_KEY`     | Production/Preview | **Secreta**: bypassa RLS, solo servidor          |
+   | `DATABASE_URL`                  | Production/Preview | Transaction pooler, **puerto 6543** (ver arriba) |
+   | `APP_URL`                       | Production         | `https://tu-dominio.vercel.app`, sin barra final |
+
+   `APP_URL` no es opcional en producción: los enlaces de invitación se construyen a partir de
+   ella y, si falta, se arman con los headers de la petición.
+
+3. **Aplica las migraciones** contra la base de producción antes del primer despliegue
+   (`npm run db:migrate`) y siembra los planes (`npm run db:seed`).
+4. **Despliega.** Tras el deploy, valida el flujo real: registro → login → invitar agente.
+
+### Notas de runtime
+
+- El cliente de Postgres usa `max: 1` y `prepare: false` (ver `src/server/db/client.ts`): cada
+  lambda tibia mantiene su propio pool y el plan gratuito de Supabase permite 15 conexiones en
+  total, así que subir `max` agota el pool con pocas lambdas concurrentes.
+- La protección de rutas vive en `src/proxy.ts` (el rename de `middleware.ts` en Next 16) y es
+  optimista: páginas y Server Actions revalidan sesión y rol en el servidor, y RLS hace cumplir el
+  aislamiento por tenant en la base de datos.
 
 ## Estructura de carpetas
 

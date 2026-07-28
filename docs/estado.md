@@ -23,6 +23,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 **Objetivo:** Usuario puede crear contactos, propiedades, y mover deals en kanban.
 
 ### Tarea T1.1 — Esquema contactos y preferencias
+
 - [hecho] — Migraciones `contacts` (0004/0005, creada dentro de T1.6 por la FK de propietario, ver
   ADR-011), `lead_preferences` (0008/0009) + `created_by` (0010) + RLS + seeds (10 leads con
   preferencias por tenant) + helper `isValidE164`. Revisión del orquestador 2026-07-09: se
@@ -31,6 +32,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   idempotente.
 
 ### Tarea T1.2 — Servicio y Server Actions (contactos)
+
 - [hecho] — Zod schemas en `src/lib/validations/contacts.ts` (create + update `.partial()`,
   mensajes es-CO, par fecha/canal de consentimiento validado en conjunto), servicio en
   `src/server/services/contacts.ts` (`createContact`, `updateContact`, `getContact` con
@@ -43,6 +45,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   suite existente.
 
 ### Tarea T1.3 — UI: Listado y ficha de contactos
+
 - [hecho] — `/app/contactos` (tabla con búsqueda, filtros por tipo/estado y
   paginación de 10, estado vacío), diálogo de creación/edición con `react-hook-form` +
   `@hookform/resolvers` sobre los schemas Zod de T1.2, y ficha `/app/contactos/[id]` con edición
@@ -54,6 +57,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   E2E `tests/e2e/contacts.spec.ts` 5/5, RLS 36/36.
 
 ### Tarea T1.4 — Servicio preferencias del lead
+
 - [hecho] — Zod schemas en `src/lib/validations/lead-preferences.ts` (reutiliza `PROPERTY_TYPES` de
   properties en vez de duplicar la lista; `operationType` limitado a venta|arriendo para respetar el
   check constraint de la tabla; `getLeadPreferenceRangeIssues` valida presupuesto min<max y estrato
@@ -71,6 +75,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   Verificado en vivo: typecheck limpio, lint limpio, unit 176/176 (29 nuevos).
 
 ### Tarea T1.5 — UI: Sub-formulario de preferencias
+
 - [hecho] — `LeadPreferencesPanel` en la ficha de contacto: una pestaña por
   operación (Venta / Arriendo, la que no tiene fila se marca "(sin registrar)"), cada una con su
   `LeadPreferenceForm` independiente y su `operationType` fijo, de modo que guardar en una pestaña
@@ -84,6 +89,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   flujo de editar preferencias; la verificación de T1.5 es solo unit + typecheck.
 
 ### Tarea T1.6 — Esquema propiedades
+
 - [hecho] — Migraciones `properties`, `property_media`, `property_documents` (0004/0005), trigger
   de portada única (0006), bucket Storage `property-photos` con RLS por ruta de tenant y lectura
   pública solo para propiedades `disponible` (0007, ver ADR-011) + seeds (5 propiedades por
@@ -91,6 +97,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   trigger de portada y bloqueo anon.
 
 ### Tarea T1.7 — Servicio CRUD propiedades
+
 - [hecho] — Zod schemas en `src/lib/validations/properties.ts` (regla venta/arriendo/ambas
   compartida vía `getOperationPricingIssues`), servicio en `src/server/services/properties.ts`
   (`generatePropertyCode` con estrategia optimista + retry sobre el unique constraint,
@@ -101,6 +108,7 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   hallazgos. Verificado en vivo: unit 138/138 (41 nuevos), RLS 36/36, CI verde (`d3f69f6`).
 
 ### Tarea T1.8 — UI: Listado y ficha de propiedades
+
 - [hecho] — `/app/propiedades` (tabla con búsqueda, filtros de
   tipo/operación/estado/precio y paginación), wizard multi-paso de creación con combobox de
   propietario sobre los contactos del tenant, y ficha `/app/propiedades/[id]` con cambio de estado
@@ -130,21 +138,27 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   `page.tsx`). Pendiente añadir un filtro `search` al servicio.
 
 ### Tarea T1.9 — Upload de fotos a Supabase Storage
+
 - [pendiente] — Drop-zone, validación MIME/tamaño, reordenamiento, portada
 
 ### Tarea T1.10 — Ficha pública `/p/[tenant]/[codigo]`
+
 - [pendiente] — Ruta pública (sin auth) para compartir propiedad; botón WhatsApp (wa.me)
 
 ### Tarea T2.1 — Esquema pipeline, stages y deals
+
 - [pendiente] — Migraciones `pipelines`, `pipeline_stages`, `deals` + RLS + seeds (default pipelines)
 
 ### Tarea T2.2 — Servicio deals
+
 - [pendiente] — Backend: crear deal, mover entre etapas, cerrar (ganado/perdido), historial
 
 ### Tarea T2.3 — UI: Kanban de deals
+
 - [pendiente] — Página kanban con drag-drop entre etapas, crear deal, detalles modal
 
 ### Tarea T1.11 — Campo "próxima actividad"
+
 - [pendiente] — Agregar columna `next_activity_date` a `contacts` y `deals`; UI para establecer fecha
 
 ---
@@ -155,10 +169,12 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 **Objetivo:** Click-to-chat WhatsApp + vista simple de próximas actividades.
 
 ### Cambios respecto al plan maestro
+
 - ❌ **NO** se implementa: WhatsApp Cloud API, automatizaciones complejas, agenda de visitas detallada, timeline unificado
 - ✅ **SÍ** se implementa: botón wa.me simplista, vista tabla de próximas actividades por fecha
 
 ### Tareas (a detallar cuando F1 esté lista)
+
 - T4.1 (simplificado) — Botón WhatsApp click-to-chat (wa.me link)
 - T2.4 (simplificado) — Vista "Próximas actividades" (tabla por fecha, no calendario)
 
@@ -170,12 +186,14 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 **Objetivo:** Suscripciones con MercadoPago, deploy a producción.
 
 ### Cambios respecto al plan maestro
+
 - ✅ MercadoPago (confirmado 2026-07-08, no Wompi)
 - ⏸️ Panel super-admin simplificado: solo lista de tenants + estado de pago (sin impersonación)
 - ⏸️ Suite E2E simplificada (sin matching automático, sin visitas, sin recordatorios)
 - ⏸️ Onboarding simplificado: solo landing + signup (sin wizard guiado)
 
 ### Tareas (a detallar cuando F1+F2 estén listas)
+
 - T5.1 — Confirmar precios + crear cuenta MercadoPago sandbox
 - T5.2 — Integración MercadoPago (suscripciones, webhooks, máquina de estados)
 - T5.3 — Límites por plan + UI de suscripción (reducida)
@@ -188,41 +206,69 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
 
 ## Qué se cortó del MVP (roadmap post-lanzamiento v1.5+)
 
-| Funcionalidad | Razón | Alternativa en MVP |
-|---|---|---|
-| Motor de matching automático | Complejidad > valor inicial | Usuario conecta contactos a propiedades manualmente |
-| Agenda de visitas (calendario completo) | Funcionalidad pesada | Campo simple "próxima actividad" (fecha) |
-| Timeline unificado de actividades | Tracking detallado no crítico | Si need, users ven próxima actividad + notas |
-| Automatizaciones (recordatorios, alertas) | Sin infraestructura jobs | Usuario recuerda manualmente o usa alarma del teléfono |
-| WhatsApp Cloud API + webhooks | API external = complexity | Click-to-chat (wa.me) genera 90% del valor |
-| Reportes/dashboard | Analytics inicial no crítico | Users pueden exportar CSV si necesitan |
-| Panel super-admin completo | Pocas features en lanzamiento | Básico: lista de tenants + pago |
-| Onboarding wizard guiado | UX nice-to-have | Landing + signup directo |
-| Firma electrónica, API pública, facturación DIAN | Post-MVP | v2+ |
+| Funcionalidad                                    | Razón                         | Alternativa en MVP                                     |
+| ------------------------------------------------ | ----------------------------- | ------------------------------------------------------ |
+| Motor de matching automático                     | Complejidad > valor inicial   | Usuario conecta contactos a propiedades manualmente    |
+| Agenda de visitas (calendario completo)          | Funcionalidad pesada          | Campo simple "próxima actividad" (fecha)               |
+| Timeline unificado de actividades                | Tracking detallado no crítico | Si need, users ven próxima actividad + notas           |
+| Automatizaciones (recordatorios, alertas)        | Sin infraestructura jobs      | Usuario recuerda manualmente o usa alarma del teléfono |
+| WhatsApp Cloud API + webhooks                    | API external = complexity     | Click-to-chat (wa.me) genera 90% del valor             |
+| Reportes/dashboard                               | Analytics inicial no crítico  | Users pueden exportar CSV si necesitan                 |
+| Panel super-admin completo                       | Pocas features en lanzamiento | Básico: lista de tenants + pago                        |
+| Onboarding wizard guiado                         | UX nice-to-have               | Landing + signup directo                               |
+| Firma electrónica, API pública, facturación DIAN | Post-MVP                      | v2+                                                    |
 
 ---
 
 ## Notas de operación
 
 ### Supabase se pausa por inactividad
+
 El 2026-07-26 el proyecto estaba pausado (los del plan gratuito se pausan tras ~1 semana sin uso) y
 bloqueaba `test:e2e`, `test:rls`, `db:seed` y toda prueba manual. Se reanudó desde el dashboard.
 Para diagnosticarlo: `npm run db:ping`; si además falla un E2E preexistente que estaba verde, es el
 entorno y no una regresión del código nuevo.
 
 ### Despliegue
+
 `docs/despliegue.md` tiene el procedimiento para Vercel Hobby. Preparado el 2026-07-26 pero **sin
 desplegar**: falta que el usuario cree la cuenta de Vercel y conecte el repo. `npm run build` pasa
 (13 rutas) y `.env*` está fuera del repo. `getDb()` quedó configurado para serverless (`max: 1`,
-`prepare: false`) porque en Vercel hay que usar el *transaction pooler* de Supabase (puerto 6543):
+`prepare: false`) porque en Vercel hay que usar el _transaction pooler_ de Supabase (puerto 6543):
 la conexión directa es solo IPv6 y las lambdas son IPv4, y el pooler no admite sentencias
 preparadas.
 
 ### El pool de conexiones se agota (límite 15)
+
 Correr la suite E2E varias veces seguidas agota el pool de Supabase
-(`EMAXCONNSESSION — max clients are limited to pool_size: 15`) y entonces *todos* los tests de
+(`EMAXCONNSESSION — max clients are limited to pool_size: 15`) y entonces _todos_ los tests de
 registro fallan a la vez, imitando una caída del proyecto. Se resuelve parando el dev server y
 esperando ~15 s.
+
+### `28P01 password authentication failed` (2026-07-28)
+
+Login y registro dejaron de funcionar por completo. **Auth (GoTrue) y la service_role key seguían
+respondiendo 200**, así que el proyecto parecía sano y el síntoma se veía como un bug de producto.
+Dos causas superpuestas:
+
+1. La contraseña de Postgres había sido rotada del lado de Supabase (`.env` llevaba sin tocarse
+   desde el 8-jul y los E2E estaban verdes el 27-jul). Solo el usuario puede regenerarla desde
+   Settings → Database → Reset database password.
+2. `DATABASE_URL` apuntaba al **session pooler (5432)**, que rechaza la credencial correcta con el
+   mismo `28P01`. El **transaction pooler (6543)** sí la acepta — y es además el modo que exige el
+   `prepare: false` ya configurado en `src/server/db/client.ts` para serverless.
+
+Para distinguir un `28P01` real de un problema de parseo de la URL, conectar con
+`postgres({ host, username, password })` en parámetros explícitos, con la contraseña ya pasada por
+`decodeURIComponent`. Si aun así falla, la credencial (o el puerto) es el problema, no el `%23`.
+
+### El worker de Turbopack en dev queda inestable tras errores de BD
+
+Un `npm run dev` que arrancó con la credencial rota, acumuló errores `28P01` y luego recargó el
+`.env` deja el worker de render corrupto: cualquier ruta dinámica devuelve 500 con
+`Jest worker encountered 2 child process exceptions`, que enmascara el error real. **No es un bug
+de producto** — la misma ruta responde 200 en `npm run build && npm start` y en un dev server
+fresco. Ante ese mensaje, reiniciar el dev server antes de investigar el código.
 
 ---
 
@@ -241,6 +287,7 @@ esperando ~15 s.
 **Núcleo SaaS (F0):** `tenants`, `plans`, `subscriptions`, `payments`, `memberships`, `audit_log`
 
 **CRM Fase 1:**
+
 - `contacts` — nombre, teléfono E.164, email, cédula/NIT, tipos[], origen, estado lead, agente, consentimiento, **próxima_actividad** (fecha), notas, tenant_id, timestamps
 - `lead_preferences` — contacto, operación, tipos[], zonas[], presupuesto, hab/baños/parqueos mín., estrato, tenant_id, timestamps
 - `properties` — código interno, tipo, operación, estado, propietario, precio/canon, características, dirección, tenant_id, timestamps
@@ -251,6 +298,7 @@ esperando ~15 s.
 - `deals` — contacto, propiedad, pipeline, etapa_actual, agente, valor_estimado, motivo_pérdida (si cerrado), historial JSONB, tenant_id, timestamps
 
 **NO en F1 (cortado):**
+
 - `matches`, `visits`, `activities`, `integration_settings` (WhatsApp), `scheduled_jobs` (automatizaciones)
 
 ---
