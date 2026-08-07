@@ -14,12 +14,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { login, type LoginState } from "./actions";
+import { login, loginDemo, type LoginState } from "./actions";
 
 const initialState: LoginState = {};
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
+  const [demoState, demoAction, demoPending] = useActionState(loginDemo, initialState);
+  // `NEXT_PUBLIC_*` se sustituye en tiempo de build, así que hay que reiniciar el dev server
+  // tras cambiar el .env para que el nuevo valor quede incrustado en el bundle del cliente.
+  const demoEnabled = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">
@@ -30,9 +34,9 @@ export default function LoginPage() {
         </CardHeader>
         <form action={formAction}>
           <CardContent className="flex flex-col gap-4">
-            {state.error && (
+            {(state.error ?? demoState.error) && (
               <Alert variant="destructive" role="alert">
-                <AlertTitle>{state.error}</AlertTitle>
+                <AlertTitle>{state.error ?? demoState.error}</AlertTitle>
               </Alert>
             )}
             <div className="flex flex-col gap-2">
@@ -62,6 +66,17 @@ export default function LoginPage() {
             </p>
           </CardFooter>
         </form>
+
+        {demoEnabled && (
+          <form action={demoAction} className="border-t px-6 pt-4 pb-6">
+            <Button type="submit" variant="secondary" className="w-full" disabled={demoPending}>
+              {demoPending ? "Entrando…" : "Entrar como demo"}
+            </Button>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Acceso de prueba con datos de ejemplo, sin credenciales.
+            </p>
+          </form>
+        )}
       </Card>
     </main>
   );

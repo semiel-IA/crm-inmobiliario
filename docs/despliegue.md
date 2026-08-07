@@ -35,6 +35,16 @@ Development). Los valores salen del dashboard de Supabase; son los mismos del `.
 | `DATABASE_URL` | ver abajo — **no** la misma que en local | 🔒 secreta |
 | `APP_URL` | la URL que asigne Vercel, ej. `https://crm-inmobiliario.vercel.app` | sin barra final |
 
+### ⚠️ Modo demo — NO configurar en producción
+
+`NEXT_PUBLIC_DEMO_MODE` habilita el botón "Entrar como demo" del login, que entra al tenant de
+demostración **sin pedir credenciales**. Es una herramienta de prueba: cualquiera que llegue a la
+URL podría usarlo.
+
+Al desplegar, dejar `NEXT_PUBLIC_DEMO_MODE` **sin definir** (o en cualquier valor distinto de
+`"true"`) y **no** configurar `DEMO_USER_EMAIL` ni `DEMO_USER_PASSWORD`. Sin la variable, el botón
+no se renderiza y la Server Action `loginDemo` rechaza cualquier intento.
+
 ### ⚠️ `DATABASE_URL` debe usar el *transaction pooler*
 
 La cadena de conexión directa (`db.<ref>.supabase.co:5432`) **no sirve en Vercel**: los proyectos
