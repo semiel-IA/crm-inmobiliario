@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseClientEnv, parseEnv } from "@/lib/env";
+import { isDemoModeEnabled, parseClientEnv, parseEnv } from "@/lib/env";
 
 const validRaw = {
   NEXT_PUBLIC_SUPABASE_URL: "https://krcsempfrkizmbpqvksz.supabase.co",
@@ -83,5 +83,21 @@ describe("parseClientEnv", () => {
     expect(() =>
       parseClientEnv({ ...validClientRaw, NEXT_PUBLIC_SUPABASE_ANON_KEY: "" }),
     ).toThrow();
+  });
+});
+
+describe("isDemoModeEnabled", () => {
+  it("está habilitado solo con el valor exacto 'true'", () => {
+    expect(isDemoModeEnabled({ NEXT_PUBLIC_DEMO_MODE: "true" })).toBe(true);
+  });
+
+  it("está deshabilitado cuando la variable falta", () => {
+    expect(isDemoModeEnabled({})).toBe(false);
+  });
+
+  it("está deshabilitado con 'false' o cualquier otro valor", () => {
+    expect(isDemoModeEnabled({ NEXT_PUBLIC_DEMO_MODE: "false" })).toBe(false);
+    expect(isDemoModeEnabled({ NEXT_PUBLIC_DEMO_MODE: "1" })).toBe(false);
+    expect(isDemoModeEnabled({ NEXT_PUBLIC_DEMO_MODE: "TRUE" })).toBe(false);
   });
 });

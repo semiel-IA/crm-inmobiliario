@@ -10,6 +10,8 @@ export const DATABASE_URL_PENDING_PLACEHOLDER = "[DB_PASSWORD_PENDIENTE]";
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  /** Habilita el botón de acceso demo del login (T1.13). Ver `isDemoModeEnabled`. */
+  NEXT_PUBLIC_DEMO_MODE: z.string().optional(),
 });
 
 const envSchema = clientEnvSchema.extend({
@@ -22,6 +24,12 @@ const envSchema = clientEnvSchema.extend({
    * header-derived origin when unset (local dev without a fixed domain yet).
    */
   APP_URL: z.string().url().optional(),
+  /**
+   * Credenciales del usuario de demostración (T1.13). Solo se usan cuando
+   * `NEXT_PUBLIC_DEMO_MODE === "true"`; opcionales para que la app arranque sin ellas.
+   */
+  DEMO_USER_EMAIL: z.string().email().optional(),
+  DEMO_USER_PASSWORD: z.string().min(8).optional(),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -64,4 +72,13 @@ export function getEnv(): Env {
     cachedEnv = parseEnv(process.env);
   }
   return cachedEnv;
+}
+
+/**
+ * El modo demo abre un acceso de un clic sin credenciales, así que se exige el valor exacto
+ * `"true"`: cualquier otro valor (incluido `"TRUE"` o `"1"`) lo deja apagado. Debe quedar
+ * desactivado en producción — ver `docs/despliegue.md`.
+ */
+export function isDemoModeEnabled(raw: Record<string, string | undefined>): boolean {
+  return raw.NEXT_PUBLIC_DEMO_MODE === "true";
 }
