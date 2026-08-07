@@ -137,6 +137,53 @@ Actualizado 2026-07-08. Cambio de alcance: plan maestro original era F0–F6; ah
   página trae hasta 200 filas y filtra en memoria (ver comentario `SEARCH_SCAN_LIMIT` en
   `page.tsx`). Pendiente añadir un filtro `search` al servicio.
 
+### Tarea T1.12 — Sistema visual cristalizado
+
+- [hecho] — Tema oscuro por defecto con paleta índigo/violeta/cian en los tokens `.dark` de
+  `globals.css`, utilidad `.glass` (blur + borde translúcido + sombra interior) aplicada a `Card`,
+  `Dialog`, `Popover` y la barra de navegación, y fondo de malla degradada fijo
+  (`gradient-background.tsx`). Rediseño **por tokens**: los 17 componentes shadcn heredan el estilo
+  sin reescribirse. Las tablas densas llevan vidrio solo en el contenedor, nunca por fila. Degrada
+  a superficie sólida bajo `prefers-reduced-transparency`. De paso se corrigieron el `title` por
+  defecto de `create-next-app` y el `lang="en"` del `<html>` (la UI es es-CO).
+- Ojo al reinstalar componentes shadcn: `npx shadcn add <x>` ofrece sobrescribir `card.tsx` y
+  aceptarlo borra el `.glass`. Responder **no**.
+
+### Tarea T1.13 — Modo demo
+
+- [hecho] — Botón "Entrar como demo" en el login que entra al tenant de demostración sin
+  credenciales. `ensureDemoTenant()` es idempotente y **reutiliza `registerTenant()`**, de modo que
+  el usuario demo recibe `tenant_id`/`role` en `app_metadata` como cualquier otro y **RLS sigue
+  aplicando**: el tenant demo es un tenant más, no una ruta que evade el aislamiento. El flujo de
+  auth real (login, registro, invitaciones) quedó intacto.
+- ⚠️ **`NEXT_PUBLIC_DEMO_MODE` debe quedar apagada en producción** — con ella activa cualquiera
+  entra con un clic. Ver `docs/despliegue.md`.
+
+### Tarea T1.14 — Dashboard financiero (datos de ejemplo)
+
+- [hecho] — `/app/dashboard` con tres tarjetas (ganancias netas, pérdidas netas, neto del mes) en
+  COP y gráfico de línea de 30 días. Refresco cada 5 s en el cliente sobre un PRNG determinista
+  (sin polling al servidor: sería infraestructura desperdiciada sobre datos falsos).
+- ⚠️ **Las cifras son inventadas.** Toda cifra sale de
+  `src/server/services/dashboard/mock-data.ts`, la única frontera de datos falsos, detrás del
+  contrato estable `MonthlyFinancials`. Para conectar datos reales tras T2.1: implementar ese mismo
+  tipo consultando `deals` con filtro por `tenant_id` y cambiar la importación en `page.tsx`; la UI
+  no cambia. El badge "Datos de demostración" es visible en pantalla.
+- La primera ejecución real en el navegador (2026-08-07) destapó **cuatro defectos** que typecheck,
+  lint y unit tests no podían ver; todos corregidos:
+  1. **El acceso demo no funcionaba.** `ensureDemoTenant` comprobaba solo la fila del tenant, pero
+     cuando `registerTenant` falla tras crear el tenant, su compensación borra el usuario de auth y
+     la fila del tenant puede sobrevivir. Ese huérfano hacía que la comprobación pasara para
+     siempre y el login fallara por no haber usuario que autenticar. Ahora se verifican **las dos**
+     cosas y el huérfano se repara. Cubierto por test de regresión.
+  2. **Las tarjetas de vidrio eran invisibles** sobre el degradado: `--card` al 55 % con borde de
+     token se fundía con el fondo. Subido a 72 % con borde claro explícito.
+  3. **El gráfico salía deformado y a un tercio del ancho**: `ChartContainer` trae `aspect-video`,
+     que gana sobre una clase de altura. Neutralizado con `aspect-auto`.
+  4. **Los montos salían grises**: `text-[var(--chart-3)]` no resuelve en Tailwind v4; se usan las
+     utilidades de tema `text-chart-3`/`text-chart-5`. El eje Y pasó a miles porque las cifras
+     diarias imprimían "0M".
+
 ### Tarea T1.9 — Upload de fotos a Supabase Storage
 
 - [pendiente] — Drop-zone, validación MIME/tamaño, reordenamiento, portada

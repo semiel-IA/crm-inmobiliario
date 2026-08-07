@@ -100,7 +100,7 @@ test("2. crear propiedad vía wizard: validación de precio y código autogenera
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/propiedades");
@@ -161,7 +161,7 @@ test("3. ficha: cambiar estado a 'Reservada' persiste", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/propiedades");
@@ -193,7 +193,7 @@ test("4. listado: filtrar por tipo", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/propiedades");

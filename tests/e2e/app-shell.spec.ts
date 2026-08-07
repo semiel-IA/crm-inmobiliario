@@ -95,7 +95,7 @@ test("2. el admin renombra la inmobiliaria desde Configuración", async ({ page 
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page
@@ -120,7 +120,7 @@ test("3. el admin invita a un agente y el agente acepta la invitación", async (
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page
@@ -150,7 +150,7 @@ test("4. como agente, el nav no muestra Equipo ni Configuración", async ({ page
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(AGENT_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   const nav = page.getByRole("navigation", { name: "Navegación principal" });

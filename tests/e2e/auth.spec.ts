@@ -85,7 +85,7 @@ test("2. el admin invita a un agente y obtiene el link copiable", async ({ page 
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.getByRole("link", { name: "Equipo" }).click();
@@ -114,7 +114,7 @@ test("2b. el admin puede revocar una invitación pendiente (Fix 4b)", async ({ p
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/equipo");
@@ -167,7 +167,7 @@ test("4. el agente no puede entrar a configuración ni equipo (redirigido a /app
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(AGENT_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/configuracion");
@@ -187,7 +187,7 @@ test("5. login con contraseña incorrecta muestra error y no crea sesión", asyn
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill("contrasena-incorrecta-123");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   // `.filter(...)` evita la colisión con el route announcer de Next (también role="alert").
   await expect(

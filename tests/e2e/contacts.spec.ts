@@ -93,7 +93,7 @@ test("2. el formulario rechaza un teléfono inválido con el mensaje del schema"
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/contactos");
@@ -120,7 +120,7 @@ test("3. crear contacto → aparece en el listado", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/contactos");
@@ -145,7 +145,7 @@ test("4. la búsqueda filtra por nombre", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/contactos");
@@ -175,7 +175,7 @@ test("5. abrir ficha → editar nombre → persiste", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
   await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("**/app");
 
   await page.goto("/app/contactos");
