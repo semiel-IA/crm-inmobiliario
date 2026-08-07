@@ -37,7 +37,7 @@ export default function FinancialCards({ initialData }: { initialData: MonthlyFi
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-[var(--chart-3)]">{formatCOP(data.netGains)}</p>
+          <p className="text-3xl font-semibold text-chart-3">{formatCOP(data.netGains)}</p>
         </CardContent>
       </Card>
 
@@ -48,7 +48,7 @@ export default function FinancialCards({ initialData }: { initialData: MonthlyFi
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-[var(--chart-5)]">{formatCOP(data.netLosses)}</p>
+          <p className="text-3xl font-semibold text-chart-5">{formatCOP(data.netLosses)}</p>
         </CardContent>
       </Card>
 
@@ -59,7 +59,7 @@ export default function FinancialCards({ initialData }: { initialData: MonthlyFi
         <CardContent>
           <p
             className={`text-3xl font-semibold ${
-              isPositive ? "text-[var(--chart-3)]" : "text-[var(--chart-5)]"
+              isPositive ? "text-chart-3" : "text-chart-5"
             }`}
           >
             {formatCOP(data.net)}

@@ -18,6 +18,23 @@ function fakeDb(existingRows: { id: string }[]) {
         }),
       }),
     }),
+    delete: () => ({
+      where: async () => undefined,
+    }),
+  } as never;
+}
+
+/** Doble del cliente admin: solo `auth.admin.listUsers`, que es lo único que se consulta. */
+function fakeAdmin(emails: string[]) {
+  return {
+    auth: {
+      admin: {
+        listUsers: async () => ({
+          data: { users: emails.map((email) => ({ email })) },
+          error: null,
+        }),
+      },
+    },
   } as never;
 }
 
@@ -27,7 +44,11 @@ describe("ensureDemoTenant", () => {
       .fn()
       .mockResolvedValue({ tenantId: "t1", userId: "u1", slug: DEMO_TENANT_SLUG });
 
-    await ensureDemoTenant(credentials, { db: fakeDb([]), register });
+    await ensureDemoTenant(credentials, {
+      db: fakeDb([]),
+      register,
+      adminClient: fakeAdmin([]),
+    });
 
     expect(register).toHaveBeenCalledTimes(1);
     expect(register).toHaveBeenCalledWith(
@@ -35,12 +56,34 @@ describe("ensureDemoTenant", () => {
     );
   });
 
-  it("no vuelve a registrar si el tenant demo ya existe", async () => {
+  it("no vuelve a registrar cuando el tenant Y el usuario de auth existen", async () => {
     const register = vi.fn();
 
-    await ensureDemoTenant(credentials, { db: fakeDb([{ id: "t1" }]), register });
+    await ensureDemoTenant(credentials, {
+      db: fakeDb([{ id: "t1" }]),
+      register,
+      adminClient: fakeAdmin([credentials.email]),
+    });
 
     expect(register).not.toHaveBeenCalled();
+  });
+
+  it("repara el tenant huérfano: existe la fila pero no el usuario de auth", async () => {
+    // Regresión de la verificación en vivo del 2026-08-07: si `registerTenant` falla después de
+    // crear el tenant, su compensación borra el usuario de auth pero la fila del tenant puede
+    // sobrevivir. Comprobar solo el tenant dejaba el demo roto para siempre: se salía temprano y
+    // el login fallaba porque no había usuario que autenticar.
+    const register = vi
+      .fn()
+      .mockResolvedValue({ tenantId: "t2", userId: "u2", slug: DEMO_TENANT_SLUG });
+
+    await ensureDemoTenant(credentials, {
+      db: fakeDb([{ id: "t1" }]),
+      register,
+      adminClient: fakeAdmin([]),
+    });
+
+    expect(register).toHaveBeenCalledTimes(1);
   });
 
   it("tolera una carrera: si el correo ya fue tomado, no propaga el error", async () => {
@@ -49,7 +92,7 @@ describe("ensureDemoTenant", () => {
       .mockRejectedValue(new RegisterTenantError("Este correo ya está registrado.", "email_taken"));
 
     await expect(
-      ensureDemoTenant(credentials, { db: fakeDb([]), register }),
+      ensureDemoTenant(credentials, { db: fakeDb([]), register, adminClient: fakeAdmin([]) }),
     ).resolves.toBeUndefined();
   });
 
@@ -58,7 +101,7 @@ describe("ensureDemoTenant", () => {
       .fn()
       .mockRejectedValue(new RegisterTenantError("Falló la base de datos.", "unknown"));
 
-    await expect(ensureDemoTenant(credentials, { db: fakeDb([]), register })).rejects.toThrow(
+    await expect(ensureDemoTenant(credentials, { db: fakeDb([]), register, adminClient: fakeAdmin([]) })).rejects.toThrow(
       "Falló la base de datos.",
     );
   });
@@ -68,7 +111,7 @@ describe("ensureDemoTenant", () => {
       .fn()
       .mockResolvedValue({ tenantId: "t1", userId: "u1", slug: DEMO_TENANT_SLUG });
 
-    await ensureDemoTenant(credentials, { db: fakeDb([]), register });
+    await ensureDemoTenant(credentials, { db: fakeDb([]), register, adminClient: fakeAdmin([]) });
 
     // Si estos dos divergen, la detección de "ya existe" nunca acierta y se intenta registrar
     // en cada clic (el registro fallaría por email duplicado en vez de reusar el tenant).
