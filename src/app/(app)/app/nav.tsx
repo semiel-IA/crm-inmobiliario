@@ -8,6 +8,7 @@ import {
   Building2,
   Calendar,
   Home,
+  LayoutDashboard,
   LogOut,
   Menu,
   Settings,
@@ -28,6 +29,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/app", label: "Inicio", icon: Home },
+  { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/contactos", label: "Contactos", icon: Users },
   { href: "/app/propiedades", label: "Propiedades", icon: Building2 },
   { href: "/app/negocios", label: "Negocios", icon: Briefcase },
@@ -59,7 +61,7 @@ export function AppNav({ role, tenantName, fullName, signOutAction }: AppNavProp
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || role === "admin");
 
   return (
-    <div className="flex flex-col border-b md:w-56 md:shrink-0 md:border-r md:border-b-0">
+    <div className="glass flex flex-col rounded-none md:w-56 md:shrink-0">
       <div className="flex items-center justify-between p-4 md:block">
         <div>
           <p className="truncate text-sm font-semibold">{tenantName}</p>
